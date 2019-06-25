@@ -139,11 +139,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Core.cpp" />
     <ClCompile Include="src\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\Shader.frag" />
-    <None Include="src\Shader.vert" />
+    <None Include="data\Shader.frag" />
+    <None Include="data\Shader.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Core.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
