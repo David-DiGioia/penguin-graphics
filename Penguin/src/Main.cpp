@@ -4,14 +4,28 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <memory>
 
 #include "Core.h"
+#include "Texture.h"
 
+// Texture coords range from [0, 1]
 float vertexBuffer[]{
-	-0.5f, -0.5f, 0.0f, // bottom left
-	-0.5f, 0.5f, 0.0f,   // top left
-	0.5f, 0.5f, 0.0f,   // top right
-	0.5f, -0.5f, 0.0f,  // bottom right
+	// bottom left
+	-0.5f, -0.5f, 0.0f,  // position
+	0.0f, 0.0f,          // texture coord
+
+	// top left
+	-0.5f, 0.5f, 0.0f,   // position
+	0.0f, 1.0f,          // texture coord
+
+	// top right
+	0.5f, 0.5f, 0.0f,    // position
+	1.0f, 1.0f,          // texture coord
+
+	// bottom right
+	0.5f, -0.5f, 0.0f,   // position
+	1.0f, 0.0f,          // texture coord
 };
 
 int indices[]{
@@ -75,6 +89,25 @@ GLuint generateProgram(const char* vertShaderPath, const char* fragShaderPath)
 	glAttachShader(program, fragShader);
 	glLinkProgram(program);
 
+	GLint isLinked = 0;
+	glGetProgramiv(program, GL_LINK_STATUS, (int*)& isLinked);
+	if (isLinked == GL_FALSE)
+	{
+		GLint maxLength = 0;
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+
+		// The maxLength includes the NULL character
+		std::vector<GLchar> infoLog(maxLength);
+		glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
+
+		// We don't need the program anymore.
+		glDeleteProgram(program);
+		// Don't leak shaders either.
+
+		// Use the infoLog as you see fit.
+		std::cerr << "Linking program failed.\n";
+	}
+
 	glDetachShader(program, vertShader);
 	glDetachShader(program, fragShader);
 
@@ -85,6 +118,7 @@ GLuint generateProgram(const char* vertShaderPath, const char* fragShaderPath)
 }
 
 GLuint program;
+std::unique_ptr<Texture> texture;
 
 void init()
 {
@@ -106,17 +140,38 @@ void init()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
+	program = generateProgram("data/shaders/Shader.vert", "data/shaders/Shader.frag");
+	glUseProgram(program);
 
-	constexpr int attribArrayIndexPosition{ 0 };
-	glVertexAttribPointer(attribArrayIndexPosition, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
-	glEnableVertexAttribArray(attribArrayIndexPosition);
+	texture = std::make_unique<Texture>("data/textures/penguin.png");
+	// Use texture slot 0. Later this should not be hardcoded.
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture->id);
 
-	program = generateProgram("data\\Shader.vert", "data\\Shader.frag");
+	GLint uniform{ glGetUniformLocation(program, "u_Texture") };
+	if (uniform == -1)
+		std::cout << "uniform == -1\n";
+	glUniform1i(uniform, 0);
+	glUseProgram(0);
+
+	constexpr int indexPosition{ 0 };
+	constexpr int indexTexCoord{ 1 };
+	int stride{ 5 * sizeof(float) };
+	glVertexAttribPointer(indexPosition, 3, GL_FLOAT, GL_FALSE, stride, 0);
+	glVertexAttribPointer(indexTexCoord, 2, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(indexPosition);
+	glEnableVertexAttribArray(indexTexCoord);
 }
+
+// Note: I think texture was failing when declared globally because it calls
+// gl functions before the context has been created.
+// Q: So why does it fail when created in init function?
+// A: Destructor is called.
 
 void render()
 {
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glUseProgram(program);

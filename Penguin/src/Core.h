@@ -11,6 +11,7 @@ MessageCallback(GLenum source,
 	const GLchar* message,
 	const void* userParam);
 
+#define SUPPRESS_NOTIFICATION
 #define DEBUG_BREAK __debugbreak()
 
 #define ASSERT(x) if (!(x)) DEBUG_BREAK;

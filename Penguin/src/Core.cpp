@@ -31,6 +31,9 @@ MessageCallback(GLenum source,
 		break;
 	case GL_DEBUG_SEVERITY_NOTIFICATION:
 		severityString = "NOTIFICATION";
+#ifdef SUPPRESS_NOTIFICATION
+		return;
+#endif
 		break;
 	default:
 		severityString = "[unknown]";
