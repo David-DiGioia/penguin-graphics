@@ -102,7 +102,6 @@ GLuint generateProgram(const char* vertShaderPath, const char* fragShaderPath)
 
 		// We don't need the program anymore.
 		glDeleteProgram(program);
-		// Don't leak shaders either.
 
 		// Use the infoLog as you see fit.
 		std::cerr << "Linking program failed.\n";
@@ -143,7 +142,7 @@ void init()
 	program = generateProgram("data/shaders/Shader.vert", "data/shaders/Shader.frag");
 	glUseProgram(program);
 
-	texture = std::make_unique<Texture>("data/textures/penguin.png");
+	texture = std::make_unique<Texture>("data/textures/penguin_t.png");
 	// Use texture slot 0. Later this should not be hardcoded.
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture->id);
@@ -209,6 +208,10 @@ int main(void)
 		std::cout << "Error\n";
 
 	std::cout << glGetString(GL_VERSION) << '\n';
+
+	// Enables transparency in textures
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	init();
 
