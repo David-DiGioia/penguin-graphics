@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "glm/glm.hpp"
 
 #include "Core.h"
 
@@ -12,7 +13,8 @@ public:
 	void bind() const;
 	void unbind() const;
 	GLint getUniform(const char* name);
-	void setUniform1i(unsigned int uniform, int n);
+	void setUniform1i(GLint uniform, int n);
+	void setUniformMat4f(GLint uniform, const glm::mat4& matrix);
 
 private:
 	unsigned int m_id;

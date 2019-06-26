@@ -3,6 +3,8 @@
 #include <memory>
 #include <vector>
 #include <iostream>
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 #include "Core.h"
 #include "Util.h"
@@ -43,6 +45,8 @@ std::unique_ptr<VertexArray> vao;
 std::unique_ptr<VertexBuffer> vbo;
 std::unique_ptr<IndexBuffer> ib;
 
+glm::mat4 proj;
+
 void init()
 {
 	vao = std::make_unique<VertexArray>();
@@ -72,19 +76,21 @@ void init()
 
 	GLint u_texture{ program->getUniform("u_Texture") };
 	program->setUniform1i(u_texture, 0);
+
+	// matrices
+	float scale{ 1.0f };
+	proj = glm::ortho(-2.0f * scale, 2.0f * scale, -1.5f * scale, 1.5f * scale);
+	GLint u_proj{ program->getUniform("u_proj") };
+	program->setUniformMat4f(u_proj, proj);
 }
 
 void render()
 {
-
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	program->bind();
-
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-	program->unbind();
 }
 
 int main(void)

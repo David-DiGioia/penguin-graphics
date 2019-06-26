@@ -1,7 +1,7 @@
 #include "Texture.h"
 
 #include "GL/glew.h"
-#include "vendor/stb_image/stb_image.h"
+#include "stb_image/stb_image.h"
 
 Texture::Texture(const char* path)
 	: m_id{ 0 }, m_width{ 0 }, m_height{ 0 }, m_bitsPerPixel{ 0 }, m_buffer{ nullptr }

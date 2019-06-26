@@ -1,6 +1,7 @@
 #include "Program.h"
 
 #include <iostream>
+#include "glm/gtc/type_ptr.hpp"
 
 #include "Util.h"
 
@@ -59,7 +60,12 @@ GLint Program::getUniform(const char* name)
 	return uniform;
 }
 
-void Program::setUniform1i(unsigned int uniform, int n)
+void Program::setUniform1i(GLint uniform, int n)
 {
 	glUniform1i(uniform, n);
+}
+
+void Program::setUniformMat4f(GLint uniform, const glm::mat4& matrix)
+{
+	glUniformMatrix4fv(uniform, 1, GL_FALSE, glm::value_ptr(matrix));
 }
