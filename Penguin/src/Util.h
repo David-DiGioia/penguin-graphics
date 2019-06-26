@@ -10,6 +10,4 @@ namespace Util {
 
 	GLuint compileShader(GLenum type, const char* srcPath);
 
-	GLuint generateProgram(const char* vertShaderPath, const char* fragShaderPath);
-
 }

@@ -49,41 +49,4 @@ namespace Util {
 		return shader;
 	}
 
-	GLuint generateProgram(const char* vertShaderPath, const char* fragShaderPath)
-	{
-		GLuint vertShader{ compileShader(GL_VERTEX_SHADER, vertShaderPath) };
-		GLuint fragShader{ compileShader(GL_FRAGMENT_SHADER, fragShaderPath) };
-
-		GLuint program{ glCreateProgram() };
-		glAttachShader(program, vertShader);
-		glAttachShader(program, fragShader);
-		glLinkProgram(program);
-
-		GLint isLinked = 0;
-		glGetProgramiv(program, GL_LINK_STATUS, (int*)& isLinked);
-		if (isLinked == GL_FALSE)
-		{
-			GLint maxLength = 0;
-			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
-
-			// The maxLength includes the NULL character
-			std::vector<GLchar> infoLog(maxLength);
-			glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
-
-			// We don't need the program anymore.
-			glDeleteProgram(program);
-
-			// Use the infoLog as you see fit.
-			std::cerr << "Linking program failed.\n";
-		}
-
-		glDetachShader(program, vertShader);
-		glDetachShader(program, fragShader);
-
-		glDeleteShader(vertShader);
-		glDeleteShader(fragShader);
-
-		return program;
-	}
-
 }

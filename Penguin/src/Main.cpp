@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <memory>
+#include <vector>
 #include <iostream>
 
 #include "Core.h"
@@ -10,6 +11,7 @@
 #include "VertexBuffer.h"
 #include "VertexBufferLayout.h"
 #include "IndexBuffer.h"
+#include "Program.h"
 
 // Texture coords range from [0, 1]
 float vertexBuffer[]{
@@ -35,9 +37,7 @@ unsigned int indices[]{
 	2, 3, 0,
 };
 
-
-
-GLuint program;
+std::unique_ptr<Program> program;
 std::unique_ptr<Texture> texture;
 std::unique_ptr<VertexArray> vao;
 std::unique_ptr<VertexBuffer> vbo;
@@ -59,17 +59,19 @@ void init()
 
 	ib = std::make_unique<IndexBuffer>(indices, sizeof(indices));
 
-	program = Util::generateProgram("data/shaders/Shader.vert", "data/shaders/Shader.frag");
-	glUseProgram(program);
+	std::vector<GLuint> shaders{
+		Util::compileShader(GL_VERTEX_SHADER, "data/shaders/Shader.vert"),
+		Util::compileShader(GL_FRAGMENT_SHADER, "data/shaders/Shader.frag")
+	};
+
+	program = std::make_unique<Program>(shaders);
+	program->bind();
 
 	texture = std::make_unique<Texture>("data/textures/penguin_t.png");
 	texture->bind(0);
 
-	GLint uniform{ glGetUniformLocation(program, "u_Texture") };
-	if (uniform == -1)
-		std::cout << "uniform == -1\n";
-	glUniform1i(uniform, 0);
-	glUseProgram(0);
+	GLint u_texture{ program->getUniform("u_Texture") };
+	program->setUniform1i(u_texture, 0);
 }
 
 void render()
@@ -78,11 +80,11 @@ void render()
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	glUseProgram(program);
+	program->bind();
 
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-	glUseProgram(0);
+	program->unbind();
 }
 
 int main(void)

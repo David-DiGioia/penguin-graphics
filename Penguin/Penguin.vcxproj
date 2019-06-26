@@ -142,6 +142,7 @@
     <ClCompile Include="src\Core.cpp" />
     <ClCompile Include="src\IndexBuffer.cpp" />
     <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\Program.cpp" />
     <ClCompile Include="src\Texture.cpp" />
     <ClCompile Include="src\Util.cpp" />
     <ClCompile Include="src\vendor\stb_image\std_image.cpp" />
@@ -155,6 +156,7 @@
   <ItemGroup>
     <ClInclude Include="src\Core.h" />
     <ClInclude Include="src\IndexBuffer.h" />
+    <ClInclude Include="src\Program.h" />
     <ClInclude Include="src\Texture.h" />
     <ClInclude Include="src\Util.h" />
     <ClInclude Include="src\vendor\stb_image\stb_image.h" />
