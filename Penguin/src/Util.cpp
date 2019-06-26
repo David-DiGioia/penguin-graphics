@@ -7,6 +7,17 @@
 
 namespace Util {
 
+	glm::mat4 createProjMatrix(const FrustumData& fd)
+	{
+		return glm::mat4{
+			(2 * fd.p) / (fd.r - fd.l), 0.0f, 0.0f, 0.0f,
+			0.0f, (2 * fd.p) / (fd.t - fd.b), 0.0f, 0.0f,
+			(fd.r + fd.l) / (fd.r - fd.l), (fd.t + fd.b) /
+			(fd.t - fd.b), (fd.n + fd.f) / (fd.n - fd.f), -1.0f,
+			0.0f, 0.0f, (2 * fd.f * fd.n) / (fd.n - fd.f), 0.0f
+		};
+	}
+
 	std::string stringFromFile(const char* filePath)
 	{
 		std::ifstream stream{ filePath };

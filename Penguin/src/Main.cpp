@@ -18,19 +18,19 @@
 // Texture coords range from [0, 1]
 float vertexBuffer[]{
 	// bottom left
-	-0.5f, -0.5f, 0.0f,  // position
+	-0.5f, -0.5f, -1.0f,  // position
 	0.0f, 0.0f,          // texture coord
 
 	// top left
-	-0.5f, 0.5f, 0.0f,   // position
+	-0.5f, 0.5f, -1.0f,   // position
 	0.0f, 1.0f,          // texture coord
 
 	// top right
-	0.5f, 0.5f, 0.0f,    // position
+	0.5f, 0.5f, -1.0f,    // position
 	1.0f, 1.0f,          // texture coord
 
 	// bottom right
-	0.5f, -0.5f, 0.0f,   // position
+	0.5f, -0.5f, -1.0f,   // position
 	1.0f, 0.0f,          // texture coord
 };
 
@@ -45,7 +45,10 @@ std::unique_ptr<VertexArray> vao;
 std::unique_ptr<VertexBuffer> vbo;
 std::unique_ptr<IndexBuffer> ib;
 
+Util::FrustumData frustumData;
+
 glm::mat4 proj;
+GLint u_proj;
 
 void init()
 {
@@ -78,9 +81,7 @@ void init()
 	program->setUniform1i(u_texture, 0);
 
 	// matrices
-	float scale{ 1.0f };
-	proj = glm::ortho(-2.0f * scale, 2.0f * scale, -1.5f * scale, 1.5f * scale);
-	GLint u_proj{ program->getUniform("u_proj") };
+	u_proj = program->getUniform("u_proj");
 	program->setUniformMat4f(u_proj, proj);
 }
 
@@ -90,7 +91,18 @@ void render()
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	program->bind();
+	program->setUniformMat4f(u_proj, proj);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+void windowResize(GLFWwindow* window, int width, int height)
+{
+	float aspect{ width / (float)height };
+	frustumData.r = frustumData.t * aspect;
+	frustumData.l = frustumData.b * aspect;
+	proj = Util::createProjMatrix(frustumData);
+
+	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 }
 
 int main(void)
@@ -132,6 +144,15 @@ int main(void)
 	glDebugMessageCallback(MessageCallback, 0);
 
 	init();
+
+	// Initial call to resize so matrix has correct aspect
+	{
+		int width, height;
+		glfwGetWindowSize(window, &width, &height);
+		windowResize(window, width, height);
+	}
+	// Now set the callback
+	glfwSetWindowSizeCallback(window, windowResize);
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
