@@ -1,12 +1,10 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
 #include <memory>
+#include <iostream>
 
 #include "Core.h"
+#include "Util.h"
 #include "Texture.h"
 #include "VertexArray.h"
 #include "VertexBuffer.h"
@@ -37,88 +35,7 @@ unsigned int indices[]{
 	2, 3, 0,
 };
 
-std::string stringFromFile(const char* filePath)
-{
-	std::ifstream stream{ filePath };
-	if (!stream)
-	{
-		std::cerr << "Uh oh, input file could not be opened for reading!\n";
-		exit(1);
-	}
 
-	std::stringstream buffer;
-	buffer << stream.rdbuf();
-	return buffer.str();
-}
-
-GLuint compileShader(GLenum type, const char* srcPath)
-{
-	std::string srcString{ stringFromFile(srcPath) };
-	const char* src{ srcString.c_str() };
-
-	GLuint shader{ glCreateShader(type) };
-	glShaderSource(shader, 1, &src, nullptr);
-	glCompileShader(shader);
-
-	// Error Checking
-	GLint isCompiled = 0;
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
-	if (isCompiled == GL_FALSE)
-	{
-		GLint maxLength{ 0 };
-		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
-
-		// The maxLength includes the NULL character
-		std::vector<GLchar> errorLog(maxLength);
-		glGetShaderInfoLog(shader, maxLength, &maxLength, &errorLog[0]);
-
-		const char* typeString{ (type == GL_VERTEX_SHADER) ? "VERTEX" : "FRAGMENT" };
-
-		std::cerr << "ERROR: " << typeString << " SHADER FAILED COMPILATION.\n" << &errorLog[0] << '\n';
-
-		glDeleteShader(shader); // Don't leak the shader.
-		DEBUG_BREAK;
-	}
-
-	return shader;
-}
-
-GLuint generateProgram(const char* vertShaderPath, const char* fragShaderPath)
-{
-	GLuint vertShader{ compileShader(GL_VERTEX_SHADER, vertShaderPath) };
-	GLuint fragShader{ compileShader(GL_FRAGMENT_SHADER, fragShaderPath) };
-
-	GLuint program{ glCreateProgram() };
-	glAttachShader(program, vertShader);
-	glAttachShader(program, fragShader);
-	glLinkProgram(program);
-
-	GLint isLinked = 0;
-	glGetProgramiv(program, GL_LINK_STATUS, (int*)& isLinked);
-	if (isLinked == GL_FALSE)
-	{
-		GLint maxLength = 0;
-		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
-
-		// The maxLength includes the NULL character
-		std::vector<GLchar> infoLog(maxLength);
-		glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
-
-		// We don't need the program anymore.
-		glDeleteProgram(program);
-
-		// Use the infoLog as you see fit.
-		std::cerr << "Linking program failed.\n";
-	}
-
-	glDetachShader(program, vertShader);
-	glDetachShader(program, fragShader);
-
-	glDeleteShader(vertShader);
-	glDeleteShader(fragShader);
-
-	return program;
-}
 
 GLuint program;
 std::unique_ptr<Texture> texture;
@@ -142,7 +59,7 @@ void init()
 
 	ib = std::make_unique<IndexBuffer>(indices, sizeof(indices));
 
-	program = generateProgram("data/shaders/Shader.vert", "data/shaders/Shader.frag");
+	program = Util::generateProgram("data/shaders/Shader.vert", "data/shaders/Shader.frag");
 	glUseProgram(program);
 
 	texture = std::make_unique<Texture>("data/textures/penguin_t.png");

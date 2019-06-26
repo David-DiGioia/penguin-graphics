@@ -143,6 +143,7 @@
     <ClCompile Include="src\IndexBuffer.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Texture.cpp" />
+    <ClCompile Include="src\Util.cpp" />
     <ClCompile Include="src\vendor\stb_image\std_image.cpp" />
     <ClCompile Include="src\VertexArray.cpp" />
     <ClCompile Include="src\VertexBuffer.cpp" />
@@ -155,6 +156,7 @@
     <ClInclude Include="src\Core.h" />
     <ClInclude Include="src\IndexBuffer.h" />
     <ClInclude Include="src\Texture.h" />
+    <ClInclude Include="src\Util.h" />
     <ClInclude Include="src\vendor\stb_image\stb_image.h" />
     <ClInclude Include="src\VertexArray.h" />
     <ClInclude Include="src\VertexBuffer.h" />
