@@ -1,13 +1,17 @@
 #pragma once
 
-struct Texture
+class Texture
 {
-	unsigned int id;
-	int width;
-	int height;
-	int bitsPerPixel;
-	unsigned char* buffer;
-
+public:
 	Texture(const char* path);
 	~Texture();
+	void bind(unsigned int slot) const;
+	void unbind() const;
+
+private:
+	unsigned int m_id;
+	int m_width;
+	int m_height;
+	int m_bitsPerPixel;
+	unsigned char* m_buffer;
 };
