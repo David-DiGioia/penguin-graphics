@@ -25,20 +25,20 @@
 
 std::unique_ptr<Program> program;
 
-std::vector<Model> models;
+std::vector<MeshData::Model> models;
 std::vector<VertexBuffer> vbos;
 std::vector<VertexArray> vaos;
 
-Util::FrustumData frustumData;
+glm::mat4 cameraToClip;
+GLint u_modelToWorld;
+GLint u_worldToClip;
 
-glm::mat4 projMat;
-GLint u_cameraToClip;
-GLint u_modelToCamera;
-
+std::unique_ptr<MeshData::Camera> camera;
 std::unique_ptr<Object> monkey;
 
 void init()
 {
+	camera = std::make_unique<MeshData::Camera>();
 	monkey = std::make_unique<Object>(&models, "data/mesh/susanne.obj", "data/textures/test_grid.png");
 
 	VertexBufferLayout layout;
@@ -51,7 +51,7 @@ void init()
 		vaos.emplace_back();
 		vaos[i].bind();
 
-		vbos.emplace_back(&models[i].mesh.vertices[0], (unsigned int)(models[i].mesh.vertices.size() * sizeof(Vertex)));
+		vbos.emplace_back(&models[i].mesh.vertices[0], (unsigned int)(models[i].mesh.vertices.size() * sizeof(MeshData::Vertex)));
 		vbos[i].bind();
 
 		vaos[i].addBuffer(vbos[i], layout);
@@ -69,13 +69,16 @@ void init()
 	program->setUniform1i(u_texture, 0);
 
 	// matrices
-	u_cameraToClip = program->getUniform("u_cameraToClip");
-	u_modelToCamera = program->getUniform("u_modelToCamera");
+	u_modelToWorld = program->getUniform("u_modelToWorld");
+	u_worldToClip = program->getUniform("u_worldToClip");
 }
 
 glm::vec3 position{ 0.0f, 0.0f, -2.0f };
 float angle{ 0 };
 glm::vec3 scale{ 1.0f, 1.0f, 1.0f };
+
+glm::vec3 positionC{ 0.0f, 0.0f, 0.0f };
+float angleC{ 0 };
 
 void update()
 {
@@ -86,9 +89,20 @@ void update()
 	monkey->get().transform.pos = position;
 	monkey->get().transform.rot = orientation;
 	monkey->get().transform.scale = scale;
+
+	glm::fquat orientationC{ glm::angleAxis(angleC, axis) };
+	camera->transform.pos = positionC;
+	camera->transform.rot = orientationC;
 }
 
-glm::mat4 createModelMatrix(const Transform& transform)
+glm::mat4 createCameraMatrix(const MeshData::Transform& transform)
+{
+	glm::mat4 rotate = glm::toMat4(glm::conjugate(transform.rot));
+	glm::mat4 translate = glm::translate(glm::mat4{ 1.0f }, -transform.pos);
+	return translate * rotate;
+}
+
+glm::mat4 createModelMatrix(const MeshData::Transform& transform)
 {
 	glm::mat4 scale = glm::scale(glm::mat4{ 1.0f }, transform.scale);
 	glm::mat4 rotate = glm::toMat4(transform.rot);
@@ -102,13 +116,15 @@ void render()
 	glClearDepth(1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	glm::mat4 worldToCamera{ createCameraMatrix(camera->transform) };
+
 	program->bind();
-	program->setUniformMat4f(u_cameraToClip, projMat);
+	program->setUniformMat4f(u_worldToClip, cameraToClip * worldToCamera);
 
 	for (int i{ 0 }; i < models.size(); ++i)
 	{
-		glm::mat4 modelMat{ createModelMatrix(models[i].transform) };
-		program->setUniformMat4f(u_modelToCamera, modelMat);
+		glm::mat4 modelToWorld{ createModelMatrix(models[i].transform) };
+		program->setUniformMat4f(u_modelToWorld, modelToWorld);
 
 		vaos[i].bind();
 		models[i].colorMap.bind(0);
@@ -126,6 +142,11 @@ void renderGui()
 	ImGui::SliderFloat3("Position", &position.x, -3.0f, 3.0f);
 	ImGui::SliderFloat3("Scale", &scale.x, 0.0f, 3.0f);
 
+	ImGui::Text("Camera transform:");
+
+	ImGui::SliderFloat("AngleC", &angleC, 0.0f, 2.0f * Constants::PI);
+	ImGui::SliderFloat3("PositionC", &positionC.x, -3.0f, 3.0f);
+
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	ImGui::End();
 }
@@ -133,9 +154,9 @@ void renderGui()
 void windowResize(GLFWwindow* window, int width, int height)
 {
 	float aspect{ width / (float)height };
-	frustumData.r = frustumData.t * aspect;
-	frustumData.l = frustumData.b * aspect;
-	projMat = Util::createProjMatrix(frustumData);
+	camera->frustum.r = camera->frustum.t * aspect;
+	camera->frustum.l = camera->frustum.b * aspect;
+	cameraToClip = Util::createProjMatrix(camera->frustum);
 
 	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 }

@@ -7,7 +7,7 @@
 
 namespace Util {
 
-	glm::mat4 createProjMatrix(const FrustumData& fd)
+	glm::mat4 createProjMatrix(const MeshData::FrustumData& fd)
 	{
 		return glm::mat4{
 			(2 * fd.p) / (fd.r - fd.l), 0.0f, 0.0f, 0.0f,
@@ -46,14 +46,14 @@ namespace Util {
 		return result;
 	}
 
-	Mesh loadOBJ(const char* path)
+	MeshData::Mesh loadOBJ(const char* path)
 	{
 		std::ifstream stream{ path };
 		ASSERT(stream);
 
 		constexpr int MAX_LINE_LENGTH{ 128 };
 
-		Mesh result;
+		MeshData::Mesh result;
 		std::vector<glm::vec3> tempPositions;
 		std::vector<glm::vec2> tempTexCoords;
 		std::vector<glm::vec3> tempNormals;
@@ -88,7 +88,7 @@ namespace Util {
 					std::vector<std::string> strIndices{ splitString(strings[i], std::string{"/"}) };
 
 					// Subtract 1 since obj indices start at 1 instead of 0
-					result.vertices.push_back(Vertex{
+					result.vertices.push_back(MeshData::Vertex{
 						tempPositions[(long long int)std::stoi(strIndices[0]) - 1],
 						tempTexCoords[(long long int)std::stoi(strIndices[1]) - 1],
 						tempNormals[(long long int)std::stoi(strIndices[2]) - 1]
