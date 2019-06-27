@@ -21,6 +21,7 @@
 #include "VertexBufferLayout.h"
 #include "IndexBuffer.h"
 #include "Program.h"
+#include "MeshData.h"
 
 // Texture coords range from [0, 1]
 float vertexBuffer[]{
@@ -99,9 +100,10 @@ float angle;
 void update()
 {
 	glm::mat4 translate{ glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) };
-
-	glm::vec3 axis{ 0.0f, 1.0f, 0.0f };
+	glm::vec3 axis{ 0.0f, 1.0f, 1.0f };
+	axis = glm::normalize(axis);
 	glm::fquat orientation{ glm::angleAxis(angle, axis) };
+
 	modelMat = glm::mat4(1.0f);
 	modelMat = translate * glm::toMat4(orientation) * modelMat;
 }
@@ -114,6 +116,7 @@ void render()
 	program->bind();
 	program->setUniformMat4f(u_cameraToClip, projMat);
 	program->setUniformMat4f(u_modelToCamera, modelMat);
+
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 

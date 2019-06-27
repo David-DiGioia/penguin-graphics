@@ -28,6 +28,77 @@ namespace Util {
 		return buffer.str();
 	}
 
+	std::vector<std::string> splitString(const std::string& s, const std::string& delim)
+	{
+		size_t beg{ 0 };
+		size_t end{ 0 };
+		std::vector<std::string> result;
+
+		std::string token;
+		while ((end = s.find(delim, beg)) != std::string::npos)
+		{
+			token = s.substr(beg, end - beg);
+			result.push_back(token);
+			beg = end + delim.length();
+		}
+		result.push_back(s.substr(beg, s.length() - beg));
+
+		return result;
+	}
+
+	Mesh loadOBJ(const char* path)
+	{
+		std::ifstream stream{ path };
+		ASSERT(stream);
+
+		constexpr int MAX_LINE_LENGTH{ 128 };
+
+		Mesh result;
+		std::vector<glm::vec3> tempPositions;
+		std::vector<glm::vec2> tempTexCoords;
+		std::vector<glm::vec3> tempNormals;
+
+		char currentLine[MAX_LINE_LENGTH];
+		while (stream.getline(currentLine, MAX_LINE_LENGTH))
+		{
+			std::vector<std::string> strings{ splitString(std::string{currentLine}, std::string{" "}) };
+
+			if (strings[0] == "v")
+			{
+				tempPositions.push_back(
+					glm::vec3{ std::stof(strings[1]), std::stof(strings[2]), std::stof(strings[3]) }
+				);
+			}
+			else if (strings[0] == "vt")
+			{
+				tempTexCoords.push_back(
+					glm::vec2{ std::stof(strings[1]), std::stof(strings[2]) }
+				);
+			}
+			else if (strings[0] == "vn")
+			{
+				tempTexCoords.push_back(
+					glm::vec3{ std::stof(strings[1]), std::stof(strings[2]), std::stof(strings[3]) }
+				);
+			}
+			else if (strings[0] == "f")
+			{
+
+				for (int i{ 1 }; i < 4; ++i)
+				{
+					std::vector<std::string> strIndices{ splitString(strings[i], std::string{"/"}) };
+
+					result.vertices.push_back(Vertex{
+						tempPositions[std::stoi(strIndices[0])],
+						tempTexCoords[std::stoi(strIndices[1])],
+						tempNormals[std::stoi(strIndices[2])]
+						});
+				}
+			}
+		}
+		return result;
+	}
+
 	GLuint compileShader(GLenum type, const char* srcPath)
 	{
 		std::string srcString{ stringFromFile(srcPath) };

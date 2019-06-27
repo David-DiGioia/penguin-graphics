@@ -296,6 +296,7 @@
     <ClInclude Include="src\Constants.h" />
     <ClInclude Include="src\Core.h" />
     <ClInclude Include="src\IndexBuffer.h" />
+    <ClInclude Include="src\MeshData.h" />
     <ClInclude Include="src\Program.h" />
     <ClInclude Include="src\Texture.h" />
     <ClInclude Include="src\Util.h" />
