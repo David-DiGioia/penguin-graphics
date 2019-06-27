@@ -48,38 +48,38 @@ unsigned int indices[]{
 };
 
 std::unique_ptr<Program> program;
-std::unique_ptr<Texture> texture;
-std::unique_ptr<VertexArray> vao;
-std::unique_ptr<VertexBuffer> vbo;
-//std::unique_ptr<IndexBuffer> ib;
 
-std::unique_ptr<Mesh> mesh;
+std::vector<Model> models;
+std::vector<VertexBuffer> vbos;
+std::vector<VertexArray> vaos;
 
 Util::FrustumData frustumData;
 
 glm::mat4 projMat;
-glm::mat4 modelMat;
 GLint u_cameraToClip;
 GLint u_modelToCamera;
 
 void init()
 {
-	mesh = std::make_unique<Mesh>(Util::loadOBJ("data/mesh/susanne.obj"));
-
-	vao = std::make_unique<VertexArray>();
-	vao->bind();
-
-	vbo = std::make_unique<VertexBuffer>(&mesh->vertices[0], mesh->vertices.size() * sizeof(Vertex));
-	vbo->bind();
+	models.emplace_back(
+		"data/mesh/susanne.obj", "data/textures/test_grid.png"
+	);
 
 	VertexBufferLayout layout;
 	layout.Push<float>(3); // position
 	layout.Push<float>(2); // textureCoords
 	layout.Push<float>(3); // normals
 
-	vao->addBuffer(*vbo, layout);
+	for (int i{ 0 }; i < models.size(); ++i)
+	{
+		vaos.emplace_back();
+		vaos[i].bind();
 
-	//ib = std::make_unique<IndexBuffer>(indices, sizeof(indices));
+		vbos.emplace_back(&models[i].mesh.vertices[0], (unsigned int)(models[i].mesh.vertices.size() * sizeof(Vertex)));
+		vbos[i].bind();
+
+		vaos[i].addBuffer(vbos[i], layout);
+	}
 
 	std::vector<GLuint> shaders{
 		Util::compileShader(GL_VERTEX_SHADER, "data/shaders/Shader.vert"),
@@ -88,9 +88,6 @@ void init()
 
 	program = std::make_unique<Program>(shaders);
 	program->bind();
-
-	texture = std::make_unique<Texture>("data/textures/test_grid.png");
-	texture->bind(0);
 
 	GLint u_texture{ program->getUniform("u_Texture") };
 	program->setUniform1i(u_texture, 0);
@@ -104,13 +101,20 @@ float angle;
 
 void update()
 {
-	glm::mat4 translate{ glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -2.0f)) };
 	glm::vec3 axis{ 0.0f, 1.0f, 0.0f };
 	axis = glm::normalize(axis);
 	glm::fquat orientation{ glm::angleAxis(angle, axis) };
 
-	modelMat = glm::mat4(1.0f);
-	modelMat = translate * glm::toMat4(orientation) * modelMat;
+	models[0].transform.pos = glm::vec3{ 0.0f, 0.0f, -2.0f };
+	models[0].transform.rot = orientation;
+}
+
+glm::mat4 createModelMatrix(const Transform& transform)
+{
+	glm::mat4 scale = glm::scale(glm::mat4{ 1.0f }, transform.scale);
+	glm::mat4 rotate = glm::toMat4(transform.rot);
+	glm::mat4 translate = glm::translate(glm::mat4{ 1.0f }, transform.pos);
+	return translate * rotate * scale;
 }
 
 void render()
@@ -121,11 +125,17 @@ void render()
 
 	program->bind();
 	program->setUniformMat4f(u_cameraToClip, projMat);
-	program->setUniformMat4f(u_modelToCamera, modelMat);
 
-	glDrawArrays(GL_TRIANGLES, 0, mesh->vertices.size());
+	for (int i{ 0 }; i < models.size(); ++i)
+	{
+		glm::mat4 modelMat{ createModelMatrix(models[i].transform) };
+		program->setUniformMat4f(u_modelToCamera, modelMat);
 
-	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		vaos[i].bind();
+		models[i].colorMap.bind(0);
+
+		glDrawArrays(GL_TRIANGLES, 0, models[i].mesh.vertices.size());
+	}
 }
 
 void renderGui()
@@ -176,7 +186,7 @@ int main(void)
 	if (GLEW_OK != err)
 		std::cout << "Error\n";
 
-	std::cout << glGetString(GL_VERSION) << '\n';
+	std::cout << glGetString(GL_VERSION) << "\n\n";
 
 	// Enables transparency in textures
 	glEnable(GL_BLEND);

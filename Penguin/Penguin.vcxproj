@@ -142,6 +142,7 @@
     <ClCompile Include="src\Core.cpp" />
     <ClCompile Include="src\IndexBuffer.cpp" />
     <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\MeshData.cpp" />
     <ClCompile Include="src\Program.cpp" />
     <ClCompile Include="src\Texture.cpp" />
     <ClCompile Include="src\Util.cpp" />
