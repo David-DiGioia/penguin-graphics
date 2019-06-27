@@ -77,21 +77,21 @@ namespace Util {
 			}
 			else if (strings[0] == "vn")
 			{
-				tempTexCoords.push_back(
+				tempNormals.push_back(
 					glm::vec3{ std::stof(strings[1]), std::stof(strings[2]), std::stof(strings[3]) }
 				);
 			}
 			else if (strings[0] == "f")
 			{
-
 				for (int i{ 1 }; i < 4; ++i)
 				{
 					std::vector<std::string> strIndices{ splitString(strings[i], std::string{"/"}) };
 
+					// Subtract 1 since obj indices start at 1 instead of 0
 					result.vertices.push_back(Vertex{
-						tempPositions[std::stoi(strIndices[0])],
-						tempTexCoords[std::stoi(strIndices[1])],
-						tempNormals[std::stoi(strIndices[2])]
+						tempPositions[(long long int)std::stoi(strIndices[0]) - 1],
+						tempTexCoords[(long long int)std::stoi(strIndices[1]) - 1],
+						tempNormals[(long long int)std::stoi(strIndices[2]) - 1]
 						});
 				}
 			}

@@ -51,7 +51,9 @@ std::unique_ptr<Program> program;
 std::unique_ptr<Texture> texture;
 std::unique_ptr<VertexArray> vao;
 std::unique_ptr<VertexBuffer> vbo;
-std::unique_ptr<IndexBuffer> ib;
+//std::unique_ptr<IndexBuffer> ib;
+
+std::unique_ptr<Mesh> mesh;
 
 Util::FrustumData frustumData;
 
@@ -62,19 +64,22 @@ GLint u_modelToCamera;
 
 void init()
 {
+	mesh = std::make_unique<Mesh>(Util::loadOBJ("data/mesh/susanne.obj"));
+
 	vao = std::make_unique<VertexArray>();
 	vao->bind();
 
-	vbo = std::make_unique<VertexBuffer>(vertexBuffer, sizeof(vertexBuffer));
+	vbo = std::make_unique<VertexBuffer>(&mesh->vertices[0], mesh->vertices.size() * sizeof(Vertex));
 	vbo->bind();
 
 	VertexBufferLayout layout;
 	layout.Push<float>(3); // position
 	layout.Push<float>(2); // textureCoords
+	layout.Push<float>(3); // normals
 
 	vao->addBuffer(*vbo, layout);
 
-	ib = std::make_unique<IndexBuffer>(indices, sizeof(indices));
+	//ib = std::make_unique<IndexBuffer>(indices, sizeof(indices));
 
 	std::vector<GLuint> shaders{
 		Util::compileShader(GL_VERTEX_SHADER, "data/shaders/Shader.vert"),
@@ -84,7 +89,7 @@ void init()
 	program = std::make_unique<Program>(shaders);
 	program->bind();
 
-	texture = std::make_unique<Texture>("data/textures/penguin_t.png");
+	texture = std::make_unique<Texture>("data/textures/test_grid.png");
 	texture->bind(0);
 
 	GLint u_texture{ program->getUniform("u_Texture") };
@@ -99,8 +104,8 @@ float angle;
 
 void update()
 {
-	glm::mat4 translate{ glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) };
-	glm::vec3 axis{ 0.0f, 1.0f, 1.0f };
+	glm::mat4 translate{ glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -2.0f)) };
+	glm::vec3 axis{ 0.0f, 1.0f, 0.0f };
 	axis = glm::normalize(axis);
 	glm::fquat orientation{ glm::angleAxis(angle, axis) };
 
@@ -117,7 +122,9 @@ void render()
 	program->setUniformMat4f(u_cameraToClip, projMat);
 	program->setUniformMat4f(u_modelToCamera, modelMat);
 
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	glDrawArrays(GL_TRIANGLES, 0, mesh->vertices.size());
+
+	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
 void renderGui()
