@@ -23,30 +23,6 @@
 #include "Program.h"
 #include "MeshData.h"
 
-// Texture coords range from [0, 1]
-float vertexBuffer[]{
-	// bottom left
-	-0.5f, -0.5f, 0.0f,  // position
-	0.0f, 0.0f,          // texture coord
-
-	// top left
-	-0.5f, 0.5f, 0.0f,   // position
-	0.0f, 1.0f,          // texture coord
-
-	// top right
-	0.5f, 0.5f, 0.0f,    // position
-	1.0f, 1.0f,          // texture coord
-
-	// bottom right
-	0.5f, -0.5f, 0.0f,   // position
-	1.0f, 0.0f,          // texture coord
-};
-
-unsigned int indices[]{
-	0, 1, 2,
-	2, 3, 0,
-};
-
 std::unique_ptr<Program> program;
 
 std::vector<Model> models;
@@ -59,11 +35,11 @@ glm::mat4 projMat;
 GLint u_cameraToClip;
 GLint u_modelToCamera;
 
+std::unique_ptr<Object> monkey;
+
 void init()
 {
-	models.emplace_back(
-		"data/mesh/susanne.obj", "data/textures/test_grid.png"
-	);
+	monkey = std::make_unique<Object>(&models, "data/mesh/susanne.obj", "data/textures/test_grid.png");
 
 	VertexBufferLayout layout;
 	layout.Push<float>(3); // position
@@ -107,9 +83,9 @@ void update()
 	axis = glm::normalize(axis);
 	glm::fquat orientation{ glm::angleAxis(angle, axis) };
 
-	models[0].transform.pos = position;
-	models[0].transform.rot = orientation;
-	models[0].transform.scale = scale;
+	monkey->get().transform.pos = position;
+	monkey->get().transform.rot = orientation;
+	monkey->get().transform.scale = scale;
 }
 
 glm::mat4 createModelMatrix(const Transform& transform)
@@ -144,7 +120,7 @@ void render()
 void renderGui()
 {
 	ImGui::Begin("Debug");
-	ImGui::Text("Debug info:");
+	ImGui::Text("Model transform:");
 
 	ImGui::SliderFloat("Angle", &angle, 0.0f, 2.0f * Constants::PI);
 	ImGui::SliderFloat3("Position", &position.x, -3.0f, 3.0f);

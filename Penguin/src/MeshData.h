@@ -6,6 +6,8 @@
 
 #include "Texture.h"
 
+constexpr const char* DEFAULT_TEX{ "data/textures/default.png" };
+
 struct Vertex
 {
 	glm::vec3 pos;
@@ -32,5 +34,16 @@ struct Model
 	Texture colorMap;
 	Transform transform;
 
-	Model(const char* objPath, const char* texturePath = "data/textures/default.png");
+	Model(const char* objPath, const char* texturePath = DEFAULT_TEX);
+};
+
+class Object
+{
+public:
+	Object(std::vector<Model>* modelVec, const char* objPath, const char* texturePath = DEFAULT_TEX);
+	Model& get();
+
+private:
+	unsigned long long m_index;
+	std::vector<Model>& m_modelVec;
 };
