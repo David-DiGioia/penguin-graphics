@@ -97,7 +97,9 @@ void init()
 	u_modelToCamera = program->getUniform("u_modelToCamera");
 }
 
-float angle;
+glm::vec3 position{ 0.0f, 0.0f, -2.0f };
+float angle{ 0 };
+glm::vec3 scale{ 1.0f, 1.0f, 1.0f };
 
 void update()
 {
@@ -105,8 +107,9 @@ void update()
 	axis = glm::normalize(axis);
 	glm::fquat orientation{ glm::angleAxis(angle, axis) };
 
-	models[0].transform.pos = glm::vec3{ 0.0f, 0.0f, -2.0f };
+	models[0].transform.pos = position;
 	models[0].transform.rot = orientation;
+	models[0].transform.scale = scale;
 }
 
 glm::mat4 createModelMatrix(const Transform& transform)
@@ -144,6 +147,8 @@ void renderGui()
 	ImGui::Text("Debug info:");
 
 	ImGui::SliderFloat("Angle", &angle, 0.0f, 2.0f * Constants::PI);
+	ImGui::SliderFloat3("Position", &position.x, -3.0f, 3.0f);
+	ImGui::SliderFloat3("Scale", &scale.x, 0.0f, 3.0f);
 
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	ImGui::End();
