@@ -3,14 +3,18 @@
 #include <memory>
 #include <vector>
 #include <iostream>
+#include <cmath>
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/quaternion.hpp""
+#include "glm/gtx/quaternion.hpp"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
 
 #include "Core.h"
 #include "Util.h"
+#include "Constants.h"
 #include "Texture.h"
 #include "VertexArray.h"
 #include "VertexBuffer.h"
@@ -21,19 +25,19 @@
 // Texture coords range from [0, 1]
 float vertexBuffer[]{
 	// bottom left
-	-0.5f, -0.5f, -1.0f,  // position
+	-0.5f, -0.5f, 0.0f,  // position
 	0.0f, 0.0f,          // texture coord
 
 	// top left
-	-0.5f, 0.5f, -1.0f,   // position
+	-0.5f, 0.5f, 0.0f,   // position
 	0.0f, 1.0f,          // texture coord
 
 	// top right
-	0.5f, 0.5f, -1.0f,    // position
+	0.5f, 0.5f, 0.0f,    // position
 	1.0f, 1.0f,          // texture coord
 
 	// bottom right
-	0.5f, -0.5f, -1.0f,   // position
+	0.5f, -0.5f, 0.0f,   // position
 	1.0f, 0.0f,          // texture coord
 };
 
@@ -50,8 +54,10 @@ std::unique_ptr<IndexBuffer> ib;
 
 Util::FrustumData frustumData;
 
-glm::mat4 proj;
-GLint u_proj;
+glm::mat4 projMat;
+glm::mat4 modelMat;
+GLint u_cameraToClip;
+GLint u_modelToCamera;
 
 void init()
 {
@@ -84,8 +90,20 @@ void init()
 	program->setUniform1i(u_texture, 0);
 
 	// matrices
-	u_proj = program->getUniform("u_proj");
-	program->setUniformMat4f(u_proj, proj);
+	u_cameraToClip = program->getUniform("u_cameraToClip");
+	u_modelToCamera = program->getUniform("u_modelToCamera");
+}
+
+float angle;
+
+void update()
+{
+	glm::mat4 translate{ glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) };
+
+	glm::vec3 axis{ 0.0f, 1.0f, 0.0f };
+	glm::fquat orientation{ glm::angleAxis(angle, axis) };
+	modelMat = glm::mat4(1.0f);
+	modelMat = translate * glm::toMat4(orientation) * modelMat;
 }
 
 void render()
@@ -94,34 +112,17 @@ void render()
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	program->bind();
-	program->setUniformMat4f(u_proj, proj);
+	program->setUniformMat4f(u_cameraToClip, projMat);
+	program->setUniformMat4f(u_modelToCamera, modelMat);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
-// Temp! Just for demonstration of ImGui
-bool show_demo_window = true;
-bool show_another_window = false;
-ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
 void renderGui()
 {
+	ImGui::Begin("Debug");
+	ImGui::Text("Debug info:");
 
-	static float f = 0.0f;
-	static int counter = 0;
-
-	ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-	ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-	ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-	ImGui::Checkbox("Another Window", &show_another_window);
-
-	ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-	ImGui::ColorEdit3("clear color", (float*)& clear_color); // Edit 3 floats representing a color
-
-	if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-		counter++;
-	ImGui::SameLine();
-	ImGui::Text("counter = %d", counter);
+	ImGui::SliderFloat("Angle", &angle, 0.0f, 2.0f * Constants::PI);
 
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	ImGui::End();
@@ -132,7 +133,7 @@ void windowResize(GLFWwindow* window, int width, int height)
 	float aspect{ width / (float)height };
 	frustumData.r = frustumData.t * aspect;
 	frustumData.l = frustumData.b * aspect;
-	proj = Util::createProjMatrix(frustumData);
+	projMat = Util::createProjMatrix(frustumData);
 
 	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 }
@@ -196,6 +197,8 @@ int main(void)
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
 	{
+		update();
+
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
