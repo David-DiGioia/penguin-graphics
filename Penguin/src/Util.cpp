@@ -65,20 +65,20 @@ namespace Util {
 
 			if (strings[0] == "v")
 			{
-				tempPositions.push_back(
-					glm::vec3{ std::stof(strings[1]), std::stof(strings[2]), std::stof(strings[3]) }
+				tempPositions.emplace_back(
+					std::stof(strings[1]), std::stof(strings[2]), std::stof(strings[3])
 				);
 			}
 			else if (strings[0] == "vt")
 			{
-				tempTexCoords.push_back(
-					glm::vec2{ std::stof(strings[1]), std::stof(strings[2]) }
+				tempTexCoords.emplace_back(
+					std::stof(strings[1]), std::stof(strings[2])
 				);
 			}
 			else if (strings[0] == "vn")
 			{
-				tempNormals.push_back(
-					glm::vec3{ std::stof(strings[1]), std::stof(strings[2]), std::stof(strings[3]) }
+				tempNormals.emplace_back(
+					std::stof(strings[1]), std::stof(strings[2]), std::stof(strings[3])
 				);
 			}
 			else if (strings[0] == "f")
