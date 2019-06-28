@@ -144,6 +144,7 @@
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\MeshData.cpp" />
     <ClCompile Include="src\Program.cpp" />
+    <ClCompile Include="src\scenes\SceneTest.cpp" />
     <ClCompile Include="src\Texture.cpp" />
     <ClCompile Include="src\Util.cpp" />
     <ClCompile Include="src\vendor\glm\detail\glm.cpp" />
@@ -299,6 +300,7 @@
     <ClInclude Include="src\IndexBuffer.h" />
     <ClInclude Include="src\MeshData.h" />
     <ClInclude Include="src\Program.h" />
+    <ClInclude Include="src\scenes\SceneTest.h" />
     <ClInclude Include="src\Texture.h" />
     <ClInclude Include="src\Util.h" />
     <ClInclude Include="src\vendor\glm\common.hpp" />

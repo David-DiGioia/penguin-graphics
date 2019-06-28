@@ -25,7 +25,6 @@
 
 std::unique_ptr<Program> program;
 
-std::vector<MeshData::Model> models;
 std::vector<VertexBuffer> vbos;
 std::vector<VertexArray> vaos;
 
@@ -33,19 +32,33 @@ glm::mat4 cameraToClip;
 GLint u_modelToWorld;
 GLint u_worldToClip;
 
+std::vector<MeshData::Model> models;
 std::unique_ptr<MeshData::Camera> camera;
-std::unique_ptr<Object> monkey;
+std::unique_ptr<Object> penguin;
+std::unique_ptr<Object> bulldozer;
+std::unique_ptr<Object> igloo;
 
 void init()
 {
+	// Warning!! Update MAX_MODELS if you need more than 16 models or vectors will have to reallocate
+	// and that deletes gl objects that we still need
+	constexpr int MAX_MODELS{ 16 };
+	models.reserve(MAX_MODELS);
+	vbos.reserve(MAX_MODELS);
+	vaos.reserve(MAX_MODELS);
+
 	camera = std::make_unique<MeshData::Camera>();
-	monkey = std::make_unique<Object>(&models, "data/mesh/susanne.obj", "data/textures/test_grid.png");
+	penguin = std::make_unique<Object>(&models, "data/mesh/penguin.obj", "data/textures/penguin_col.png");
+	bulldozer = std::make_unique<Object>(&models, "data/mesh/bulldozer.obj", "data/textures/bulldozer_col.png");
+	igloo = std::make_unique<Object>(&models, "data/mesh/igloo.obj", "data/textures/igloo_col.png");
 
 	VertexBufferLayout layout;
 	layout.Push<float>(3); // position
 	layout.Push<float>(2); // textureCoords
 	layout.Push<float>(3); // normals
 
+
+	// Beware! If vector has to reallocate for vaos or vbos, destructors will be called, deleting gl buffers
 	for (int i{ 0 }; i < models.size(); ++i)
 	{
 		vaos.emplace_back();
@@ -86,9 +99,9 @@ void update()
 	axis = glm::normalize(axis);
 	glm::fquat orientation{ glm::angleAxis(angle, axis) };
 
-	monkey->get().transform.pos = position;
-	monkey->get().transform.rot = orientation;
-	monkey->get().transform.scale = scale;
+	penguin->get().transform.pos = position;
+	penguin->get().transform.rot = orientation;
+	penguin->get().transform.scale = scale;
 
 	glm::fquat orientationC{ glm::angleAxis(angleC, axis) };
 	camera->transform.pos = positionC;
