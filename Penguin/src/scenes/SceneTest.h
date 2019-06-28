@@ -25,7 +25,7 @@ namespace Scenes {
 		std::vector<MeshData::Model> models;
 
 
-		std::unique_ptr<MeshData::Camera> camera;
+		std::unique_ptr<MeshData::Camera> activeCamera;
 		std::unique_ptr<Object> penguin;
 		std::unique_ptr<Object> bulldozer;
 		std::unique_ptr<Object> igloo;

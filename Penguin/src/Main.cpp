@@ -22,6 +22,7 @@
 #include "IndexBuffer.h"
 #include "Program.h"
 #include "MeshData.h"
+#include "scenes/Scenes.h"
 
 std::unique_ptr<Program> program;
 
@@ -32,26 +33,13 @@ glm::mat4 cameraToClip;
 GLint u_modelToWorld;
 GLint u_worldToClip;
 
-std::vector<MeshData::Model> models;
-std::unique_ptr<MeshData::Camera> camera;
-std::unique_ptr<Object> penguin;
-std::unique_ptr<Object> bulldozer;
-std::unique_ptr<Object> igloo;
+// NOTICE: CHANGING TYPE OF "scene" DETERMINES WHICH SCENE IS ACTIVE
+// -----------------------------------------------------------------
+Scenes::SceneTest scene;
+// -----------------------------------------------------------------
 
 void init()
 {
-	// Warning!! Update MAX_MODELS if you need more than 16 models or vectors will have to reallocate
-	// and that deletes gl objects that we still need
-	constexpr int MAX_MODELS{ 16 };
-	models.reserve(MAX_MODELS);
-	vbos.reserve(MAX_MODELS);
-	vaos.reserve(MAX_MODELS);
-
-	camera = std::make_unique<MeshData::Camera>();
-	penguin = std::make_unique<Object>(&models, "data/mesh/penguin.obj", "data/textures/penguin_col.png");
-	bulldozer = std::make_unique<Object>(&models, "data/mesh/bulldozer.obj", "data/textures/bulldozer_col.png");
-	igloo = std::make_unique<Object>(&models, "data/mesh/igloo.obj", "data/textures/igloo_col.png");
-
 	VertexBufferLayout layout;
 	layout.Push<float>(3); // position
 	layout.Push<float>(2); // textureCoords
@@ -59,12 +47,13 @@ void init()
 
 
 	// Beware! If vector has to reallocate for vaos or vbos, destructors will be called, deleting gl buffers
-	for (int i{ 0 }; i < models.size(); ++i)
+	for (int i{ 0 }; i < scene.models.size(); ++i)
 	{
 		vaos.emplace_back();
 		vaos[i].bind();
 
-		vbos.emplace_back(&models[i].mesh.vertices[0], (unsigned int)(models[i].mesh.vertices.size() * sizeof(MeshData::Vertex)));
+		vbos.emplace_back(&scene.models[i].mesh.vertices[0],
+			(unsigned int)(scene.models[i].mesh.vertices.size() * sizeof(MeshData::Vertex)));
 		vbos[i].bind();
 
 		vaos[i].addBuffer(vbos[i], layout);
@@ -84,28 +73,6 @@ void init()
 	// matrices
 	u_modelToWorld = program->getUniform("u_modelToWorld");
 	u_worldToClip = program->getUniform("u_worldToClip");
-}
-
-glm::vec3 position{ 0.0f, 0.0f, -2.0f };
-float angle{ 0 };
-glm::vec3 scale{ 1.0f, 1.0f, 1.0f };
-
-glm::vec3 positionC{ 0.0f, 0.0f, 0.0f };
-float angleC{ 0 };
-
-void update()
-{
-	glm::vec3 axis{ 0.0f, 1.0f, 0.0f };
-	axis = glm::normalize(axis);
-	glm::fquat orientation{ glm::angleAxis(angle, axis) };
-
-	penguin->get().transform.pos = position;
-	penguin->get().transform.rot = orientation;
-	penguin->get().transform.scale = scale;
-
-	glm::fquat orientationC{ glm::angleAxis(angleC, axis) };
-	camera->transform.pos = positionC;
-	camera->transform.rot = orientationC;
 }
 
 glm::mat4 createCameraMatrix(const MeshData::Transform& transform)
@@ -129,47 +96,29 @@ void render()
 	glClearDepth(1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glm::mat4 worldToCamera{ createCameraMatrix(camera->transform) };
+	glm::mat4 worldToCamera{ createCameraMatrix(scene.activeCamera->transform) };
 
 	program->bind();
 	program->setUniformMat4f(u_worldToClip, cameraToClip * worldToCamera);
 
-	for (int i{ 0 }; i < models.size(); ++i)
+	for (int i{ 0 }; i < scene.models.size(); ++i)
 	{
-		glm::mat4 modelToWorld{ createModelMatrix(models[i].transform) };
+		glm::mat4 modelToWorld{ createModelMatrix(scene.models[i].transform) };
 		program->setUniformMat4f(u_modelToWorld, modelToWorld);
 
 		vaos[i].bind();
-		models[i].colorMap.bind(0);
+		scene.models[i].colorMap.bind(0);
 
-		glDrawArrays(GL_TRIANGLES, 0, models[i].mesh.vertices.size());
+		glDrawArrays(GL_TRIANGLES, 0, scene.models[i].mesh.vertices.size());
 	}
-}
-
-void renderGui()
-{
-	ImGui::Begin("Debug");
-	ImGui::Text("Model transform:");
-
-	ImGui::SliderFloat("Angle", &angle, 0.0f, 2.0f * Constants::PI);
-	ImGui::SliderFloat3("Position", &position.x, -3.0f, 3.0f);
-	ImGui::SliderFloat3("Scale", &scale.x, 0.0f, 3.0f);
-
-	ImGui::Text("Camera transform:");
-
-	ImGui::SliderFloat("AngleC", &angleC, 0.0f, 2.0f * Constants::PI);
-	ImGui::SliderFloat3("PositionC", &positionC.x, -3.0f, 3.0f);
-
-	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-	ImGui::End();
 }
 
 void windowResize(GLFWwindow* window, int width, int height)
 {
 	float aspect{ width / (float)height };
-	camera->frustum.r = camera->frustum.t * aspect;
-	camera->frustum.l = camera->frustum.b * aspect;
-	cameraToClip = Util::createProjMatrix(camera->frustum);
+	scene.activeCamera->frustum.r = scene.activeCamera->frustum.t * aspect;
+	scene.activeCamera->frustum.l = scene.activeCamera->frustum.b * aspect;
+	cameraToClip = Util::createProjMatrix(scene.activeCamera->frustum);
 
 	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 }
@@ -223,6 +172,13 @@ int main(void)
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); // Callstack works with errors
 	glDebugMessageCallback(MessageCallback, 0);
 
+	// Warning!! Update MAX_MODELS if you need more than 16 models or vectors will have to reallocate
+	// and that deletes gl objects that we still need
+	scene.models.reserve(scene.MAX_MODELS);
+	vbos.reserve(scene.MAX_MODELS);
+	vaos.reserve(scene.MAX_MODELS);
+
+	scene.init();
 	init();
 
 	// Initial call to resize so matrix has correct aspect
@@ -244,14 +200,14 @@ int main(void)
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
 	{
-		update();
+		scene.update();
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
 		render();
-		renderGui();
+		scene.gui();
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
