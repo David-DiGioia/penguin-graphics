@@ -43,9 +43,7 @@ namespace Scenes {
 		return glm::angleAxis(theta, axis);
 	}
 
-	float guiDelta{ 0.0f };
-
-	void Arctic::update(float delta)
+	void Arctic::penguinInput(float delta)
 	{
 		glm::vec3 direction{ 0.0f, 0.0f, 0.0f };
 
@@ -64,6 +62,20 @@ namespace Scenes {
 			penguin->get().transform.pos += speed * delta * direction;
 			penguin->get().transform.rot = quatFromDirection(direction);
 		}
+	}
+
+	void Arctic::updateCamera()
+	{
+		activeCamera->transform.pos = cameraTarget + cameraRelativePos;
+	}
+
+	float guiDelta{ 0.0f };
+
+	void Arctic::update(float delta)
+	{
+		penguinInput(delta);
+		cameraTarget = penguin->get().transform.pos;
+		updateCamera();
 
 		guiDelta = delta;
 	}

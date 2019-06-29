@@ -36,7 +36,13 @@ namespace Scenes {
 		// player
 		float speed{ 1.0f };
 
+		// camera
+		glm::vec3 cameraTarget{ 0.0f, 0.0f, 0.0f };
+		glm::vec3 cameraRelativePos{ 0.0f, 1.0f, 3.0f };
+
 		glm::fquat quatFromDirection(const glm::vec3& direction);
+		void penguinInput(float delta);
+		void updateCamera();
 	};
 
 }
