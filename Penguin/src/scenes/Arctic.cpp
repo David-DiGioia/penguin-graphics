@@ -74,7 +74,13 @@ namespace Scenes {
 	void Arctic::update(float delta)
 	{
 		penguinInput(delta);
-		cameraTarget = penguin->get().transform.pos;
+
+		if (glm::distance2(penguin->get().transform.pos, cameraTarget) > maxDistFromTargetSquared)
+		{
+			glm::vec3 p{ penguin->get().transform.pos };
+			cameraTarget = glm::normalize(cameraTarget - p) * maxDistFromTarget + p;
+		}
+
 		updateCamera();
 
 		guiDelta = delta;
