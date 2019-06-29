@@ -35,7 +35,7 @@ GLint u_worldToClip;
 
 // NOTICE: CHANGING TYPE OF "scene" DETERMINES WHICH SCENE IS ACTIVE
 // -----------------------------------------------------------------
-Scenes::SceneTest scene;
+Scenes::Arctic scene;
 // -----------------------------------------------------------------
 
 void init()
@@ -92,7 +92,7 @@ glm::mat4 createModelMatrix(const MeshData::Transform& transform)
 
 void render()
 {
-	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+	glClearColor(scene.CLEAR_COLOR.r, scene.CLEAR_COLOR.g, scene.CLEAR_COLOR.b, scene.CLEAR_COLOR.a);
 	glClearDepth(1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -121,6 +121,11 @@ void windowResize(GLFWwindow* window, int width, int height)
 	cameraToClip = Util::createProjMatrix(scene.activeCamera->frustum);
 
 	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
+}
+
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	scene.keyEvent(key, scancode, action, mods);
 }
 
 int main(void)
@@ -187,8 +192,10 @@ int main(void)
 		glfwGetWindowSize(window, &width, &height);
 		windowResize(window, width, height);
 	}
-	// Now set the callback
+	// Now set the resize callback
 	glfwSetWindowSizeCallback(window, windowResize);
+	// Key event callback
+	glfwSetKeyCallback(window, keyCallback);
 
 	// ImGui stuff
 	IMGUI_CHECKVERSION();
@@ -197,10 +204,18 @@ int main(void)
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 460 core");
 
+	double currentTime{ 0.0 };
+	double lastFrameTime{ 0.0 };
+	float deltaTime{ 0.0f };
+
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
 	{
-		scene.update();
+		currentTime = glfwGetTime();
+		deltaTime = (float)(currentTime - lastFrameTime);
+		lastFrameTime = currentTime;
+
+		scene.update(deltaTime);
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();

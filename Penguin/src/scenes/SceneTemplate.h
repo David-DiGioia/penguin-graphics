@@ -8,16 +8,24 @@
 
 namespace Scenes {
 
-	struct SceneTest
+	// Scene MUST implement:
+	// update()
+	// init()
+	// gui()
+	// keyEvent()
+
+	// Scene MUST contain:
+	// const int MAX_MODELS
+	// const glm::vec4 CLEAR_COLOR
+	// std::vector<MeshData::Model> models
+	// std::unique_ptr<MeshData::Camera> activeCamera;
+
+	struct SceneTemplate
 	{
 		const int MAX_MODELS{ 16 };
 		const glm::vec4 CLEAR_COLOR{ 0.2f, 0.2f, 0.2f, 1.0f };
 		std::vector<MeshData::Model> models;
 		std::unique_ptr<MeshData::Camera> activeCamera;
-
-		std::unique_ptr<Object> penguin;
-		std::unique_ptr<Object> bulldozer;
-		std::unique_ptr<Object> igloo;
 
 		void init();
 		void update(float delta);

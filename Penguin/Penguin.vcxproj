@@ -144,6 +144,8 @@
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\MeshData.cpp" />
     <ClCompile Include="src\Program.cpp" />
+    <ClCompile Include="src\scenes\Arctic.cpp" />
+    <ClCompile Include="src\scenes\SceneTemplate.cpp" />
     <ClCompile Include="src\scenes\SceneTest.cpp" />
     <ClCompile Include="src\Texture.cpp" />
     <ClCompile Include="src\Util.cpp" />
@@ -300,7 +302,9 @@
     <ClInclude Include="src\IndexBuffer.h" />
     <ClInclude Include="src\MeshData.h" />
     <ClInclude Include="src\Program.h" />
+    <ClInclude Include="src\scenes\Arctic.h" />
     <ClInclude Include="src\scenes\Scenes.h" />
+    <ClInclude Include="src\scenes\SceneTemplate.h" />
     <ClInclude Include="src\scenes\SceneTest.h" />
     <ClInclude Include="src\Texture.h" />
     <ClInclude Include="src\Util.h" />
