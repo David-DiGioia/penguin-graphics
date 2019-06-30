@@ -27,21 +27,6 @@ namespace Scenes {
 		std::unique_ptr<Object> pole;
 		std::unique_ptr<Object> bulldozer;
 
-		// input
-		bool rightPressed{ false };
-		bool leftPressed{ false };
-		bool upPressed{ false };
-		bool downPressed{ false };
-
-		// player
-		float speed{ 6.0f };
-
-		// camera
-		glm::vec3 cameraTarget{ 0.0f, 0.0f, 0.0f };
-		glm::vec3 cameraRelativePos{ 0.0f, 1.0f, 3.0f };
-		float maxDistFromTarget{ 1.0f };
-		float maxDistFromTargetSquared{ maxDistFromTarget * maxDistFromTarget };
-
 		glm::fquat quatFromDirection(const glm::vec3& direction);
 		void penguinInput(float delta);
 		void updateCamera();

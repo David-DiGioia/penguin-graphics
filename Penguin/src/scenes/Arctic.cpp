@@ -12,6 +12,29 @@
 
 namespace Scenes {
 
+	namespace {
+
+		// input
+		bool rightPressed{ false };
+		bool leftPressed{ false };
+		bool upPressed{ false };
+		bool downPressed{ false };
+
+		// camera
+		glm::vec3 cameraTarget{ 0.0f, 0.0f, 0.0f };
+		glm::vec3 cameraRelativePos{ 0.0f, 1.0f, 3.0f };
+		float maxDistFromTarget{ 1.0f };
+		float maxDistFromTargetSquared{ maxDistFromTarget * maxDistFromTarget };
+
+		// player
+		float speed{ 6.0f };
+
+		// debug
+		float guiDelta{ 0.0f };
+		float guiCameraRotation{ 0.0f };
+
+	}
+
 	void Arctic::init()
 	{
 		activeCamera = std::make_unique<MeshData::Camera>();
@@ -67,10 +90,11 @@ namespace Scenes {
 
 	void Arctic::updateCamera()
 	{
-		activeCamera->transform.pos = cameraTarget + cameraRelativePos;
-	}
+		glm::vec3 cameraRelativePosRotated = glm::angleAxis(guiCameraRotation, glm::vec3{0.0f, 1.0f, 0.0f}) * cameraRelativePos;
+		activeCamera->transform.pos = cameraTarget + cameraRelativePosRotated;
 
-	float guiDelta{ 0.0f };
+		activeCamera->transform.rot = glm::angleAxis(guiCameraRotation, glm::vec3{ 0.0f, 1.0f, 0.0f });
+	}
 
 	void Arctic::update(float delta)
 	{
@@ -91,8 +115,9 @@ namespace Scenes {
 	{
 		ImGui::Begin("Debug");
 
-		ImGui::Text("Delta time: %.3f s", guiDelta);
+		ImGui::SliderFloat("Camera Angle", &guiCameraRotation, 0.0f, 2.0f * Constants::PI);
 
+		ImGui::Text("Delta time: %.3f s", guiDelta);
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();
 	}

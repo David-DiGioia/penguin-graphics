@@ -14,6 +14,9 @@ public:
 	void unbind() const;
 	GLint getUniform(const char* name);
 	void setUniform1i(GLint uniform, int n);
+	void setUniform3fv(GLint uniform, const glm::vec3& vec);
+	void setUniform4fv(GLint uniform, const glm::vec4& vec);
+	void setUniformMat3f(GLint uniform, const glm::mat3& matrix);
 	void setUniformMat4f(GLint uniform, const glm::mat4& matrix);
 
 private:

@@ -65,6 +65,21 @@ void Program::setUniform1i(GLint uniform, int n)
 	glUniform1i(uniform, n);
 }
 
+void Program::setUniform3fv(GLint uniform, const glm::vec3& vec)
+{
+	glUniform3fv(uniform, 1, glm::value_ptr(vec));
+}
+
+void Program::setUniform4fv(GLint uniform, const glm::vec4& vec)
+{
+	glUniform4fv(uniform, 1, glm::value_ptr(vec));
+}
+
+void Program::setUniformMat3f(GLint uniform, const glm::mat3& matrix)
+{
+	glUniformMatrix3fv(uniform, 1, GL_FALSE, glm::value_ptr(matrix));
+}
+
 void Program::setUniformMat4f(GLint uniform, const glm::mat4& matrix)
 {
 	glUniformMatrix4fv(uniform, 1, GL_FALSE, glm::value_ptr(matrix));
