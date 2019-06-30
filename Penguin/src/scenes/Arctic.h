@@ -34,7 +34,7 @@ namespace Scenes {
 		bool downPressed{ false };
 
 		// player
-		float speed{ 1.0f };
+		float speed{ 6.0f };
 
 		// camera
 		glm::vec3 cameraTarget{ 0.0f, 0.0f, 0.0f };

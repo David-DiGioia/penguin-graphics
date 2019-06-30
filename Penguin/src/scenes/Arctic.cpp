@@ -24,9 +24,10 @@ namespace Scenes {
 		bulldozer = std::make_unique<Object>(&models, "data/mesh/bulldozer.obj", "data/textures/bulldozer_col.png");
 
 		activeCamera->transform.pos = glm::vec3{ 0.0f, 1.0f, 5.0f };
+		arctic->get().transform.pos.z = -10.0f;
 		igloo->get().transform.pos = glm::vec3{ 4.0f, 0.0f, -1.0f };
 		pole->get().transform.pos = glm::vec3{ 1.0f, 0.0f, -2.0f };
-		bulldozer->get().transform.pos = glm::vec3{ -6.0f, 0.0f, -4.0f };
+		bulldozer->get().transform.pos = glm::vec3{ -8.0f, 0.0f, -4.0f };
 
 		glm::vec3 axis{ 0.0f, 1.0f, 0.0f };
 

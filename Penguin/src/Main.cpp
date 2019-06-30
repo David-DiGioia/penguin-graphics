@@ -30,8 +30,8 @@ std::vector<VertexBuffer> vbos;
 std::vector<VertexArray> vaos;
 
 glm::mat4 cameraToClip;
-GLint u_modelToWorld;
-GLint u_worldToClip;
+GLint u_modelToCamera;
+GLint u_cameraToClip;
 
 // NOTICE: CHANGING TYPE OF "scene" DETERMINES WHICH SCENE IS ACTIVE
 // -----------------------------------------------------------------
@@ -71,8 +71,8 @@ void init()
 	program->setUniform1i(u_texture, 0);
 
 	// matrices
-	u_modelToWorld = program->getUniform("u_modelToWorld");
-	u_worldToClip = program->getUniform("u_worldToClip");
+	u_modelToCamera = program->getUniform("u_modelToCamera");
+	u_cameraToClip = program->getUniform("u_cameraToClip");
 }
 
 glm::mat4 createCameraMatrix(const MeshData::Transform& transform)
@@ -99,12 +99,14 @@ void render()
 	glm::mat4 worldToCamera{ createCameraMatrix(scene.activeCamera->transform) };
 
 	program->bind();
-	program->setUniformMat4f(u_worldToClip, cameraToClip * worldToCamera);
+	program->setUniformMat4f(u_cameraToClip, cameraToClip);
 
 	for (int i{ 0 }; i < scene.models.size(); ++i)
 	{
 		glm::mat4 modelToWorld{ createModelMatrix(scene.models[i].transform) };
-		program->setUniformMat4f(u_modelToWorld, modelToWorld);
+		glm::mat4 modelToCamera{ worldToCamera * modelToWorld };
+
+		program->setUniformMat4f(u_modelToCamera, modelToCamera);
 
 		vaos[i].bind();
 		scene.models[i].colorMap.bind(0);
