@@ -7,6 +7,25 @@
 
 namespace Util {
 
+	Timer::Timer()
+		: m_begin{ std::chrono::high_resolution_clock::now() }
+	{
+	}
+
+	long long Timer::getMilliseconds()
+	{
+		auto end = std::chrono::high_resolution_clock::now();
+		auto dur = end - m_begin;
+		return std::chrono::duration_cast<std::chrono::milliseconds>(dur).count();
+	}
+
+	long long Timer::getNanoseconds()
+	{
+		auto end = std::chrono::high_resolution_clock::now();
+		auto dur = end - m_begin;
+		return dur.count();
+	}
+
 	glm::mat4 createProjMatrix(const MeshData::FrustumData& fd)
 	{
 		return glm::mat4{

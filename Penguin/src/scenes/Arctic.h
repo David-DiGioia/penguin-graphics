@@ -4,6 +4,7 @@
 #include <vector>
 #include "glm/glm.hpp"
 
+#include "../Core.h"
 #include "../MeshData.h"
 
 namespace Scenes {
@@ -19,6 +20,14 @@ namespace Scenes {
 		void gui();
 		void keyEvent(int key, int scancode, int action, int mods);
 		// -----------------------------------------------------------
+
+		glm::vec4 dirToLight{ 0.866f, 0.5f, 0.0f, 0.0f };
+		glm::vec4 lightIntensity{ 1.0f, 1.0f, 1.0f, 1.0f };
+		glm::vec4 ambientLightIntensity{ 0.5f, 0.5f, 0.5f, 1.0f };
+		
+#ifdef DEBUG
+		long long renderTimeNano{ 0 };
+#endif
 
 		// models
 		std::unique_ptr<Object> penguin;

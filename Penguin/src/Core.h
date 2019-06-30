@@ -14,4 +14,12 @@ MessageCallback(GLenum source,
 #define SUPPRESS_NOTIFICATION
 #define DEBUG_BREAK __debugbreak()
 
-#define ASSERT(x) if (!(x)) DEBUG_BREAK;
+#ifdef _DEBUG
+	#define DEBUG
+#endif
+
+#ifdef DEBUG
+	#define ASSERT(x) if (!(x)) DEBUG_BREAK;
+#else
+	#define ASSERT(x)
+#endif

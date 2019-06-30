@@ -1,5 +1,6 @@
 #include "Arctic.h"
 
+#include <numeric>
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtx/quaternion.hpp"
 #include "glm/gtx/vector_angle.hpp"
@@ -7,7 +8,6 @@
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
 
-#include "../Core.h"
 #include "../Constants.h"
 
 namespace Scenes {
@@ -27,16 +27,27 @@ namespace Scenes {
 		float maxDistFromTargetSquared{ maxDistFromTarget * maxDistFromTarget };
 
 		// player
-		float speed{ 6.0f };
+		float speed{ 12.0f };
+
+		// camera
+		float cameraRotation{ 0.0f };
 
 		// debug
+#ifdef DEBUG
 		float guiDelta{ 0.0f };
 		float guiCameraRotation{ 0.0f };
-
+		constexpr size_t NANO_VEC_LEN{ 100 };
+		std::vector<long long> nanoVec;
+		unsigned long long nanoVecIndex{ 0 };
+#endif
 	}
 
 	void Arctic::init()
 	{
+#ifdef DEBUG
+		nanoVec.resize(NANO_VEC_LEN);
+#endif
+
 		activeCamera = std::make_unique<MeshData::Camera>();
 		activeCamera->frustum.f = 100.0f;
 
@@ -90,10 +101,13 @@ namespace Scenes {
 
 	void Arctic::updateCamera()
 	{
-		glm::vec3 cameraRelativePosRotated = glm::angleAxis(guiCameraRotation, glm::vec3{0.0f, 1.0f, 0.0f}) * cameraRelativePos;
+#ifdef DEBUG
+		cameraRotation = guiCameraRotation;
+#endif
+		glm::vec3 cameraRelativePosRotated = glm::angleAxis(cameraRotation, glm::vec3{0.0f, 1.0f, 0.0f}) * cameraRelativePos;
 		activeCamera->transform.pos = cameraTarget + cameraRelativePosRotated;
 
-		activeCamera->transform.rot = glm::angleAxis(guiCameraRotation, glm::vec3{ 0.0f, 1.0f, 0.0f });
+		activeCamera->transform.rot = glm::angleAxis(cameraRotation, glm::vec3{ 0.0f, 1.0f, 0.0f });
 	}
 
 	void Arctic::update(float delta)
@@ -108,18 +122,26 @@ namespace Scenes {
 
 		updateCamera();
 
+#ifdef DEBUG
 		guiDelta = delta;
+		nanoVec[nanoVecIndex++ % NANO_VEC_LEN] = renderTimeNano;
+#endif
 	}
 
 	void Arctic::gui()
 	{
+#ifdef DEBUG
 		ImGui::Begin("Debug");
 
 		ImGui::SliderFloat("Camera Angle", &guiCameraRotation, 0.0f, 2.0f * Constants::PI);
 
+		long long nanoAvg{ std::accumulate(nanoVec.begin(), nanoVec.end(), 0) / NANO_VEC_LEN };
+
+		ImGui::Text("Render time: %f avg ms", static_cast<double>(nanoAvg) / 1000000);
 		ImGui::Text("Delta time: %.3f s", guiDelta);
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();
+#endif
 	}
 
 	void Arctic::keyEvent(int key, int scancode, int action, int mods)
