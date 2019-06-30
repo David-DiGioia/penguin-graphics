@@ -32,6 +32,8 @@ namespace Scenes {
 		// camera
 		float cameraRotation{ 0.0f };
 
+		const glm::vec3 upVec{ 0.0f, 1.0f, 0.0f };
+
 		// debug
 #ifdef DEBUG
 		float guiDelta{ 0.0f };
@@ -93,6 +95,8 @@ namespace Scenes {
 
 		if (glm::length2(direction) > 0.001f)
 		{
+			direction = glm::angleAxis(cameraRotation, upVec) * direction;
+
 			direction = glm::normalize(direction);
 			penguin->get().transform.pos += speed * delta * direction;
 			penguin->get().transform.rot = quatFromDirection(direction);
@@ -104,10 +108,10 @@ namespace Scenes {
 #ifdef DEBUG
 		cameraRotation = guiCameraRotation;
 #endif
-		glm::vec3 cameraRelativePosRotated = glm::angleAxis(cameraRotation, glm::vec3{0.0f, 1.0f, 0.0f}) * cameraRelativePos;
+		glm::vec3 cameraRelativePosRotated = glm::angleAxis(cameraRotation, upVec) * cameraRelativePos;
 		activeCamera->transform.pos = cameraTarget + cameraRelativePosRotated;
 
-		activeCamera->transform.rot = glm::angleAxis(cameraRotation, glm::vec3{ 0.0f, 1.0f, 0.0f });
+		activeCamera->transform.rot = glm::angleAxis(cameraRotation, upVec);
 	}
 
 	void Arctic::update(float delta)
