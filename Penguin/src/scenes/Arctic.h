@@ -24,6 +24,8 @@ namespace Scenes {
 		glm::vec4 dirToLight{ 0.866f, 0.5f, 0.0f, 0.0f };
 		glm::vec4 lightIntensity{ 1.0f, 1.0f, 1.0f, 1.0f };
 		glm::vec4 ambientLightIntensity{ 0.5f, 0.5f, 0.5f, 1.0f };
+
+		glm::vec3 pointLightPos{ 0.0f, 1.5f, 0.0f };
 		
 #ifdef DEBUG
 		long long renderTimeNano{ 0 };

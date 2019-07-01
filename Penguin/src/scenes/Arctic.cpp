@@ -25,13 +25,12 @@ namespace Scenes {
 		glm::vec3 cameraRelativePos{ 0.0f, 1.0f, 3.0f };
 		float maxDistFromTarget{ 1.0f };
 		float maxDistFromTargetSquared{ maxDistFromTarget * maxDistFromTarget };
+		float cameraRotation{ 0.0f };
 
 		// player
 		float speed{ 12.0f };
 
-		// camera
-		float cameraRotation{ 0.0f };
-
+		// constants
 		const glm::vec3 upVec{ 0.0f, 1.0f, 0.0f };
 
 		// debug
@@ -65,19 +64,16 @@ namespace Scenes {
 		pole->get().transform.pos = glm::vec3{ 1.0f, 0.0f, -2.0f };
 		bulldozer->get().transform.pos = glm::vec3{ -8.0f, 0.0f, -4.0f };
 
-		glm::vec3 axis{ 0.0f, 1.0f, 0.0f };
-
-		bulldozer->get().transform.rot = glm::angleAxis(-Constants::PI / 16.0f, axis);
-		igloo->get().transform.rot = glm::angleAxis(-Constants::PI / 3.0f, axis);
+		bulldozer->get().transform.rot = glm::angleAxis(-Constants::PI / 16.0f, upVec);
+		igloo->get().transform.rot = glm::angleAxis(-Constants::PI / 3.0f, upVec);
 	}
 
 	// Input vec must be normalized!
 	glm::fquat Arctic::quatFromDirection(const glm::vec3& direction)
 	{
 		float theta{ glm::orientedAngle(glm::vec2{direction.x, direction.z}, glm::vec2{0.0f, 1.0f}) };
-		glm::vec3 axis{ 0.0f, 1.0f, 0.0f };
 
-		return glm::angleAxis(theta, axis);
+		return glm::angleAxis(theta, upVec);
 	}
 
 	void Arctic::penguinInput(float delta)
@@ -141,7 +137,7 @@ namespace Scenes {
 
 		long long nanoAvg{ std::accumulate(nanoVec.begin(), nanoVec.end(), 0) / NANO_VEC_LEN };
 
-		ImGui::Text("Render time: %f avg ms", static_cast<double>(nanoAvg) / 1000000);
+		ImGui::Text("Render time: %.3f avg ms", static_cast<double>(nanoAvg) / 1000000);
 		ImGui::Text("Delta time: %.3f s", guiDelta);
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();

@@ -161,6 +161,8 @@
     <ClCompile Include="src\VertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="data\shaders\PointLight.frag" />
+    <None Include="data\shaders\PointLight.vert" />
     <None Include="data\shaders\Shader.frag" />
     <None Include="data\shaders\Shader.vert" />
     <None Include="src\vendor\glm\detail\func_common.inl" />
