@@ -1,0 +1,8 @@
+Point light no attenuation, model space:
+[0.20, 0.25] avg ms
+
+Point light no attenuation, camera space:
+[0.18, 0.19] avg ms
+
+Point light attenuation, camera space:
+[0.18, 0.19] avg ms

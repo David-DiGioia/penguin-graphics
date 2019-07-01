@@ -6,7 +6,7 @@ layout(location = 2) in vec3 normal;
 
 out vec2 v_texCoord;
 out vec3 v_normal;
-out vec3 v_modelSpacePosition;
+out vec3 v_cameraSpacePos;
 
 uniform mat4 u_modelToCamera;
 uniform mat4 u_cameraToClip;
@@ -18,6 +18,6 @@ void main()
 	gl_Position = u_cameraToClip * (u_modelToCamera * vec4(position, 1.0f));
 
 	v_texCoord = texCoord;
-	v_modelSpacePosition = position;
-	v_normal = normal;
+	v_cameraSpacePos = vec3(u_modelToCamera * vec4(position, 1.0f));
+	v_normal = u_normalModelToCameraMatrix * normal;
 }

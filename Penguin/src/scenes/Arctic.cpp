@@ -28,7 +28,7 @@ namespace Scenes {
 		float cameraRotation{ 0.0f };
 
 		// player
-		float speed{ 12.0f };
+		float speed{ 5.0f };
 
 		// constants
 		const glm::vec3 upVec{ 0.0f, 1.0f, 0.0f };
