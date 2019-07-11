@@ -67,7 +67,7 @@ void init()
 
 	std::vector<GLuint> shaders{
 		Util::compileShader(GL_VERTEX_SHADER, "data/shaders/PointLight.vert"),
-		Util::compileShader(GL_FRAGMENT_SHADER, "data/shaders/PointLight.frag")
+		Util::compileShader(GL_FRAGMENT_SHADER, "data/shaders/Specular.frag")
 	};
 
 	program = std::make_unique<Program>(shaders);

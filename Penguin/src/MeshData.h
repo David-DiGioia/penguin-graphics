@@ -44,14 +44,8 @@ namespace MeshData {
 		struct Block
 		{
 			glm::vec4 specularColor{ 1.0f, 1.0f, 1.0f, 1.0f };
-			float specularShininess{ 1.0f };
+			float specularShininess{ 0.5f };
 		} block;
-
-		// Note to self ---------------------------------------------
-		// Next step is to actually use material block data in frag shader,
-		// and then make a way for separate objects to have separate parameters
-		// rather than all of them using the defaults
-		// ----------------------------------------------------------
 
 	private:
 		Texture m_diffuse;
