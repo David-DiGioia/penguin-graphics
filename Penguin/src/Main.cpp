@@ -128,7 +128,8 @@ void render()
 		program->setUniformMat3f(u_normalModelToCameraMatrix, modelToCamera);
 
 		vaos[i].bind();
-		scene.models[i].colorMap.bind(0);
+		scene.models[i].material.bind();
+		//scene.models[i].colorMap.bind(0);
 
 		glDrawArrays(GL_TRIANGLES, 0, scene.models[i].mesh.vertices.size());
 	}

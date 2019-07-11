@@ -31,10 +31,37 @@ namespace MeshData {
 		glm::vec3 scale{ 1.0f, 1.0f, 1.0f };
 	};
 
+	class Material
+	{
+	public:
+		Material(const char* texPath);
+		~Material();
+		void bind();
+		void unbind();
+
+		// Maps to glsl uniform block
+		// No texture because sampler2D is an opaque type and can't be in uniform block
+		struct Block
+		{
+			glm::vec4 specularColor{ 1.0f, 1.0f, 1.0f, 1.0f };
+			float specularShininess{ 1.0f };
+		} block;
+
+		// Note to self ---------------------------------------------
+		// Next step is to actually use material block data in frag shader,
+		// and then make a way for separate objects to have separate parameters
+		// rather than all of them using the defaults
+		// ----------------------------------------------------------
+
+	private:
+		Texture m_diffuse;
+		unsigned int m_uniformBuffer;
+	};
+
 	struct Model
 	{
 		Mesh mesh;
-		Texture colorMap;
+		Material material;
 		Transform transform;
 
 		Model(const char* objPath, const char* texturePath = DEFAULT_TEX);

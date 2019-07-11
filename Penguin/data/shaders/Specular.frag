@@ -11,12 +11,6 @@ uniform vec3 u_cameraSpaceLightPos;
 uniform vec4 u_lightIntensity;
 uniform vec4 u_ambientLightIntensity;
 
-layout(std140, binding = 0) uniform Material
-{
-	vec4 specularColor;
-	float specularShininess;
-} Mtl;
-
 void main()
 {
 	vec3 distVec = u_cameraSpaceLightPos - v_cameraSpacePos;

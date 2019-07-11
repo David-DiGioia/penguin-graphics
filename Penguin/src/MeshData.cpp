@@ -1,12 +1,38 @@
 #include "MeshData.h"
 
 #include "Util.h"
+#include "UboBindings.h"
 
 namespace MeshData {
 
+	Material::Material(const char* texPath)
+		: m_diffuse{ texPath }, m_uniformBuffer{ 0 }
+	{
+		glGenBuffers(1, &m_uniformBuffer);
+		glBindBuffer(GL_UNIFORM_BUFFER, m_uniformBuffer);
+		glBufferData(GL_UNIFORM_BUFFER, sizeof(block), &block, GL_STATIC_DRAW);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
+
+	Material::~Material()
+	{
+		glDeleteBuffers(1, &m_uniformBuffer);
+	}
+
+	void Material::bind()
+	{
+		m_diffuse.bind(0);
+		glBindBufferBase(GL_UNIFORM_BUFFER, UboBindings::MATERIAL, m_uniformBuffer);
+	}
+
+	void Material::unbind()
+	{
+		glBindBufferBase(GL_UNIFORM_BUFFER, UboBindings::MATERIAL, 0);
+	}
+
 	Model::Model(const char* objPath, const char* texturePath)
 		: mesh{ Util::loadOBJ(objPath) }
-		, colorMap{ texturePath }
+		, material{ texturePath }
 	{
 	}
 

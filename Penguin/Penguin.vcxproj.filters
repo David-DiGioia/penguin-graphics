@@ -477,6 +477,7 @@
     </None>
     <None Include="data\shaders\PointLight.frag" />
     <None Include="data\shaders\PointLight.vert" />
+    <None Include="data\shaders\Specular.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core.h">
@@ -1269,6 +1270,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\scenes\Arctic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UboBindings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
