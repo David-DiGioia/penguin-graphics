@@ -38,6 +38,7 @@ namespace MeshData {
 		~Material();
 		void bind();
 		void unbind();
+		void updateBuffer();
 
 		// Maps to glsl uniform block
 		// No texture because sampler2D is an opaque type and can't be in uniform block

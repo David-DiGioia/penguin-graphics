@@ -6,3 +6,9 @@ Point light no attenuation, camera space:
 
 Point light attenuation, camera space:
 [0.18, 0.19] avg ms
+
+Point light, camera space, uniform block updated with glMapBuffer:
+[0.8] avg ms
+
+Point light, camera space, uniform block updated with glBufferSubData:
+[0.19] avg ms

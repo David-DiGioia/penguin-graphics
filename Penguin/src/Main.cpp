@@ -67,7 +67,7 @@ void init()
 
 	std::vector<GLuint> shaders{
 		Util::compileShader(GL_VERTEX_SHADER, "data/shaders/PointLight.vert"),
-		Util::compileShader(GL_FRAGMENT_SHADER, "data/shaders/Specular.frag")
+		Util::compileShader(GL_FRAGMENT_SHADER, "data/shaders/HDR.frag")
 	};
 
 	program = std::make_unique<Program>(shaders);
@@ -76,18 +76,20 @@ void init()
 	GLint u_texture{ program->getUniform("u_texture") };
 	program->setUniform1i(u_texture, 0);
 
+	scene.initLights(program->getID());
+
 	// uniforms
 	//u_dirToLight = program->getUniform("u_dirToLight");
 	//u_modelSpaceLightPos = program->getUniform("u_modelSpaceLightPos");
-	u_cameraSpaceLightPos = program->getUniform("u_cameraSpaceLightPos");
-	u_lightIntensity = program->getUniform("u_lightIntensity");
-	u_ambientLightIntensity = program->getUniform("u_ambientLightIntensity");
+	//u_cameraSpaceLightPos = program->getUniform("u_cameraSpaceLightPos");
+	//u_lightIntensity = program->getUniform("u_lightIntensity");
+	//u_ambientLightIntensity = program->getUniform("u_ambientLightIntensity");
 	u_modelToCamera = program->getUniform("u_modelToCamera");
 	u_cameraToClip = program->getUniform("u_cameraToClip");
 	u_normalModelToCameraMatrix = program->getUniform("u_normalModelToCameraMatrix");
 
-	program->setUniform4fv(u_lightIntensity, scene.lightIntensity);
-	program->setUniform4fv(u_ambientLightIntensity, scene.ambientLightIntensity);
+	//program->setUniform4fv(u_lightIntensity, scene.lightIntensity);
+	//program->setUniform4fv(u_ambientLightIntensity, scene.ambientLightIntensity);
 }
 
 glm::mat4 createCameraMatrix(const MeshData::Transform& transform)
@@ -116,7 +118,8 @@ void render()
 	program->bind();
 	program->setUniformMat4f(u_cameraToClip, cameraToClip);
 	//program->setUniform3fv(u_dirToLight, worldToCamera * scene.dirToLight);
-	program->setUniform3fv(u_cameraSpaceLightPos, worldToCamera * glm::vec4(scene.pointLightPos, 1.0f));
+	//program->setUniform3fv(u_cameraSpaceLightPos, worldToCamera * glm::vec4(scene.pointLightPos, 1.0f));
+	scene.transformPointLights(worldToCamera);
 
 	for (int i{ 0 }; i < scene.models.size(); ++i)
 	{

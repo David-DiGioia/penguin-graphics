@@ -30,6 +30,16 @@ namespace MeshData {
 		glBindBufferBase(GL_UNIFORM_BUFFER, UboBindings::MATERIAL, 0);
 	}
 
+	void Material::updateBuffer()
+	{
+		glBindBuffer(GL_UNIFORM_BUFFER, m_uniformBuffer);
+		void* bufferPtr{ glMapBuffer(GL_UNIFORM_BUFFER, GL_READ_WRITE) };
+		memcpy(bufferPtr, &block, sizeof(block));
+		glUnmapBuffer(GL_UNIFORM_BUFFER);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
+
+
 	Model::Model(const char* objPath, const char* texturePath)
 		: mesh{ Util::loadOBJ(objPath) }
 		, material{ texturePath }

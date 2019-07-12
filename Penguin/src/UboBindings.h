@@ -6,5 +6,6 @@
 namespace UboBindings {
 
 	constexpr unsigned int MATERIAL{ 0 };
+	constexpr unsigned int LIGHT{ 1 };
 
 }

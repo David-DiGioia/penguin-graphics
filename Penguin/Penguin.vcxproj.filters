@@ -478,6 +478,7 @@
     <None Include="data\shaders\PointLight.frag" />
     <None Include="data\shaders\PointLight.vert" />
     <None Include="data\shaders\Specular.frag" />
+    <None Include="data\shaders\HDR.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core.h">

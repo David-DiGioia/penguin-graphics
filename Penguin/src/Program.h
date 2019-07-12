@@ -19,6 +19,8 @@ public:
 	void setUniformMat3f(GLint uniform, const glm::mat3& matrix);
 	void setUniformMat4f(GLint uniform, const glm::mat4& matrix);
 
+	inline unsigned int getID() { return m_id; }
+
 private:
 	unsigned int m_id;
 };

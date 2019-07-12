@@ -9,6 +9,7 @@
 #include "imgui/imgui_impl_opengl3.h"
 
 #include "../Constants.h"
+#include "../UboBindings.h"
 
 namespace Scenes {
 
@@ -30,6 +31,17 @@ namespace Scenes {
 		// player
 		float speed{ 5.0f };
 
+		// lights
+		glm::vec4 sunDir{ 0.866f, 0.5f, 0.0f, 0.0f };
+		glm::vec4 sunIntensity{ 1.0f, 1.0f, 1.0f, 1.0f };
+		glm::vec4 ambientIntensity{ 0.2f, 0.2f, 0.2f, 1.0f };
+
+
+		constexpr static int NUMBER_OF_LIGHTS{ 2 };
+		// subtract 1 since zeroth index is directional light
+		glm::vec4 pointPos[NUMBER_OF_LIGHTS - 1]{ { 0.0f, 1.5f, 0.0f, 1.0f } };
+		glm::vec4 pointIntensity[NUMBER_OF_LIGHTS - 1]{ {50.0f, 50.0f, 50.0f, 1.0f } };
+
 		// constants
 		const glm::vec3 upVec{ 0.0f, 1.0f, 0.0f };
 
@@ -37,10 +49,70 @@ namespace Scenes {
 #ifdef DEBUG
 		float guiDelta{ 0.0f };
 		float guiCameraRotation{ 0.0f };
+		float guiSpecular{ 0.3f };
+		glm::vec3 guiSpecColor{ 0.35f, 0.35f, 0.44f };
 		constexpr size_t NANO_VEC_LEN{ 100 };
 		std::vector<long long> nanoVec;
 		unsigned long long nanoVecIndex{ 0 };
 #endif
+
+		struct PerLight
+		{
+			glm::vec4 cameraSpaceLightPos;
+			glm::vec4 lightIntensity;
+		};
+
+		struct LightBlock
+		{
+			glm::vec4 ambientIntensity;
+			float lightAttenuation;
+			float padding[3];
+			PerLight lights[NUMBER_OF_LIGHTS];
+		} lightBlock;
+
+		unsigned int lightBuffer;
+	}
+
+	void Arctic::updateLightBuffer()
+	{
+		// TODO: try using glBufferSubData instead to see if it helps performance and removes warning
+
+		glBindBuffer(GL_UNIFORM_BUFFER, lightBuffer);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(lightBlock), &lightBlock);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+		//glBindBuffer(GL_UNIFORM_BUFFER, lightBuffer);
+		//void* bufferPtr{ glMapBuffer(GL_UNIFORM_BUFFER, GL_READ_WRITE) };
+		//memcpy(bufferPtr, &lightBlock, sizeof(lightBlock));
+		//glUnmapBuffer(GL_UNIFORM_BUFFER);
+		//glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
+
+	void Arctic::transformPointLights(const glm::mat4& worldToCamera)
+	{
+		// start i at 1 since we're assuming lights[0] is directional light
+		for (int i{ 1 }; i < NUMBER_OF_LIGHTS; ++i)
+		{
+			lightBlock.lights[i].cameraSpaceLightPos = worldToCamera * pointPos[i - 1];
+		}
+		updateLightBuffer();
+	}
+
+	void Arctic::initLights(unsigned int program)
+	{
+		lightBlock.ambientIntensity = ambientIntensity;
+		lightBlock.lightAttenuation = 4.0f * Constants::PI;
+		lightBlock.lights[0] = { sunDir, sunIntensity };
+		lightBlock.lights[1] = { pointPos[0], pointIntensity[0] };
+
+		glGenBuffers(1, &lightBuffer);
+		glBindBuffer(GL_UNIFORM_BUFFER, lightBuffer);
+		glBufferData(GL_UNIFORM_BUFFER, sizeof(lightBlock), &lightBlock, GL_STATIC_DRAW);
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+		glBindBufferBase(GL_UNIFORM_BUFFER, UboBindings::LIGHT, lightBuffer);
+
+		//updateLightBuffer();
 	}
 
 	void Arctic::init()
@@ -123,6 +195,10 @@ namespace Scenes {
 		updateCamera();
 
 #ifdef DEBUG
+		penguin->get().material.block.specularShininess = guiSpecular;
+		penguin->get().material.block.specularColor = glm::vec4{ guiSpecColor, 1.0f };
+		penguin->get().material.updateBuffer();
+
 		guiDelta = delta;
 		nanoVec[nanoVecIndex++ % NANO_VEC_LEN] = renderTimeNano;
 #endif
@@ -134,6 +210,8 @@ namespace Scenes {
 		ImGui::Begin("Debug");
 
 		ImGui::SliderFloat("Camera Angle", &guiCameraRotation, 0.0f, 2.0f * Constants::PI);
+		ImGui::SliderFloat("Specular", &guiSpecular, 0.0f, 1.0f);
+		ImGui::ColorEdit3("Spec Color", (float*)& guiSpecColor); // Edit 3 floats representing a color
 
 		long long nanoAvg{ std::accumulate(nanoVec.begin(), nanoVec.end(), 0) / NANO_VEC_LEN };
 
