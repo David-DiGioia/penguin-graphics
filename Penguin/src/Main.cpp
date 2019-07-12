@@ -120,6 +120,7 @@ void render()
 	//program->setUniform3fv(u_dirToLight, worldToCamera * scene.dirToLight);
 	//program->setUniform3fv(u_cameraSpaceLightPos, worldToCamera * glm::vec4(scene.pointLightPos, 1.0f));
 	scene.transformPointLights(worldToCamera);
+	scene.updateLightBuffer();
 
 	for (int i{ 0 }; i < scene.models.size(); ++i)
 	{

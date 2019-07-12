@@ -44,7 +44,7 @@ namespace MeshData {
 		// No texture because sampler2D is an opaque type and can't be in uniform block
 		struct Block
 		{
-			glm::vec4 specularColor{ 1.0f, 1.0f, 1.0f, 1.0f };
+			glm::vec4 specularColor{ 0.3f, 0.3f, 0.3f, 1.0f };
 			float specularShininess{ 0.5f };
 		} block;
 

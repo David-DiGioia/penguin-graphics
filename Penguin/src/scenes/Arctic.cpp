@@ -32,9 +32,10 @@ namespace Scenes {
 		float speed{ 5.0f };
 
 		// lights
-		glm::vec4 sunDir{ 0.866f, 0.5f, 0.0f, 0.0f };
+		glm::vec4 sunDir{ 0.0f, 1.0f, 0.0f, 0.0f };
 		glm::vec4 sunIntensity{ 1.0f, 1.0f, 1.0f, 1.0f };
 		glm::vec4 ambientIntensity{ 0.2f, 0.2f, 0.2f, 1.0f };
+		float dayCycleTime{ 24.0f };
 
 
 		constexpr static int NUMBER_OF_LIGHTS{ 2 };
@@ -43,7 +44,8 @@ namespace Scenes {
 		glm::vec4 pointIntensity[NUMBER_OF_LIGHTS - 1]{ {50.0f, 50.0f, 50.0f, 1.0f } };
 
 		// constants
-		const glm::vec3 upVec{ 0.0f, 1.0f, 0.0f };
+		const glm::vec3 vecY{ 0.0f, 1.0f, 0.0f };
+		const glm::vec3 vecZ{ 0.0f, 0.0f, 1.0f };
 
 		// debug
 #ifdef DEBUG
@@ -71,21 +73,19 @@ namespace Scenes {
 		} lightBlock;
 
 		unsigned int lightBuffer;
+
+		// Time is normalized time of day
+		void updateLighting(float time)
+		{
+			lightBlock.lights[0].cameraSpaceLightPos = glm::angleAxis(time * 2.0f * Constants::PI, vecZ) * sunDir;
+		}
 	}
 
 	void Arctic::updateLightBuffer()
 	{
-		// TODO: try using glBufferSubData instead to see if it helps performance and removes warning
-
 		glBindBuffer(GL_UNIFORM_BUFFER, lightBuffer);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(lightBlock), &lightBlock);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-		//glBindBuffer(GL_UNIFORM_BUFFER, lightBuffer);
-		//void* bufferPtr{ glMapBuffer(GL_UNIFORM_BUFFER, GL_READ_WRITE) };
-		//memcpy(bufferPtr, &lightBlock, sizeof(lightBlock));
-		//glUnmapBuffer(GL_UNIFORM_BUFFER);
-		//glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
 
 	void Arctic::transformPointLights(const glm::mat4& worldToCamera)
@@ -95,7 +95,6 @@ namespace Scenes {
 		{
 			lightBlock.lights[i].cameraSpaceLightPos = worldToCamera * pointPos[i - 1];
 		}
-		updateLightBuffer();
 	}
 
 	void Arctic::initLights(unsigned int program)
@@ -111,8 +110,6 @@ namespace Scenes {
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 		glBindBufferBase(GL_UNIFORM_BUFFER, UboBindings::LIGHT, lightBuffer);
-
-		//updateLightBuffer();
 	}
 
 	void Arctic::init()
@@ -136,8 +133,8 @@ namespace Scenes {
 		pole->get().transform.pos = glm::vec3{ 1.0f, 0.0f, -2.0f };
 		bulldozer->get().transform.pos = glm::vec3{ -8.0f, 0.0f, -4.0f };
 
-		bulldozer->get().transform.rot = glm::angleAxis(-Constants::PI / 16.0f, upVec);
-		igloo->get().transform.rot = glm::angleAxis(-Constants::PI / 3.0f, upVec);
+		bulldozer->get().transform.rot = glm::angleAxis(-Constants::PI / 16.0f, vecY);
+		igloo->get().transform.rot = glm::angleAxis(-Constants::PI / 3.0f, vecY);
 	}
 
 	// Input vec must be normalized!
@@ -145,7 +142,7 @@ namespace Scenes {
 	{
 		float theta{ glm::orientedAngle(glm::vec2{direction.x, direction.z}, glm::vec2{0.0f, 1.0f}) };
 
-		return glm::angleAxis(theta, upVec);
+		return glm::angleAxis(theta, vecY);
 	}
 
 	void Arctic::penguinInput(float delta)
@@ -163,7 +160,7 @@ namespace Scenes {
 
 		if (glm::length2(direction) > 0.001f)
 		{
-			direction = glm::angleAxis(cameraRotation, upVec) * direction;
+			direction = glm::angleAxis(cameraRotation, vecY) * direction;
 
 			direction = glm::normalize(direction);
 			penguin->get().transform.pos += speed * delta * direction;
@@ -176,10 +173,10 @@ namespace Scenes {
 #ifdef DEBUG
 		cameraRotation = guiCameraRotation;
 #endif
-		glm::vec3 cameraRelativePosRotated = glm::angleAxis(cameraRotation, upVec) * cameraRelativePos;
+		glm::vec3 cameraRelativePosRotated = glm::angleAxis(cameraRotation, vecY) * cameraRelativePos;
 		activeCamera->transform.pos = cameraTarget + cameraRelativePosRotated;
 
-		activeCamera->transform.rot = glm::angleAxis(cameraRotation, upVec);
+		activeCamera->transform.rot = glm::angleAxis(cameraRotation, vecY);
 	}
 
 	void Arctic::update(float delta)
@@ -193,6 +190,10 @@ namespace Scenes {
 		}
 
 		updateCamera();
+		
+		static float accumTime{ 0.0f };
+		accumTime = (accumTime + delta / dayCycleTime <= 1.0f) ? accumTime + delta / dayCycleTime : 0.0f;
+		updateLighting(accumTime);
 
 #ifdef DEBUG
 		penguin->get().material.block.specularShininess = guiSpecular;
