@@ -24,9 +24,10 @@ const int numberOfLights = 2;
 
 layout(std140, binding = 1) uniform Light
 {
-	vec4 ambientIntensity;			// 0
-	float lightAttenuation;			// 16
-	PerLight lights[numberOfLights];// 32
+	vec4 ambientIntensity;
+	float lightAttenuation;
+	float maxIntensity;
+	PerLight lights[numberOfLights];
 } Lgt;
 
 
@@ -88,6 +89,6 @@ void main()
 		accumLighting += computeLighting(Lgt.lights[light], texColor);
 	}
 
-	outputColor = accumLighting;
+	outputColor = accumLighting / Lgt.maxIntensity;
 	outputColor.a = 1.0f;
 }

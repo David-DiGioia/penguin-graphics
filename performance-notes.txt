@@ -12,3 +12,6 @@ Point light, camera space, uniform block updated with glMapBuffer:
 
 Point light, camera space, uniform block updated with glBufferSubData:
 [0.19] avg ms
+
+Daynight cycle:
+[0.19] avg ms

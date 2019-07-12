@@ -33,16 +33,26 @@ namespace Scenes {
 		float speed{ 5.0f };
 
 		// lights
-		glm::vec4 sunDir{ 0.0f, 1.0f, 0.0f, 0.0f };
-		glm::vec4 sunIntensity{ 1.0f, 1.0f, 1.0f, 1.0f };
+		const float nightMaxIntensity{ 0.5f };
+		const float dayMaxIntensity{ 12.0f };
+
+		const glm::vec4 nightAmbient{ 0.1f, 0.1f, 0.1f, 1.0f };
+		const glm::vec4 dayAmbient{ 2.0f, 2.0f, 2.0f, 1.0f };
+
+		glm::vec4 sunDir{ 0.0f, -1.0f, 0.0f, 0.0f };
+		float sunBaseIntensity{ 10.0f };
 		glm::vec4 ambientIntensity{ 0.2f, 0.2f, 0.2f, 1.0f };
 		float dayCycleTime{ 24.0f };
-		Util::Gradient<glm::vec4> skyGradient{glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f }, glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f }};
+		Util::Gradient<glm::vec4> skyGradient{ glm::vec4{ 0.0f, 0.0f, 0.1f, 1.0f }};
+		Util::Gradient<glm::vec4> sunGradient{ glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f } };
+		Util::Gradient<glm::vec4> ambientGradient{ nightAmbient };
+		Util::Gradient<float> maxGradient{ nightMaxIntensity };
+		float timeOfDay{ 0.0f };
 
 		constexpr static int NUMBER_OF_LIGHTS{ 2 };
 		// subtract 1 since zeroth index is directional light
 		glm::vec4 pointPos[NUMBER_OF_LIGHTS - 1]{ { 0.0f, 1.5f, 0.0f, 1.0f } };
-		glm::vec4 pointIntensity[NUMBER_OF_LIGHTS - 1]{ {50.0f, 50.0f, 50.0f, 1.0f } };
+		glm::vec4 pointIntensity[NUMBER_OF_LIGHTS - 1]{ {7.0f, 7.0f, 6.0f, 1.0f } };
 
 		// constants
 		const glm::vec3 vecY{ 0.0f, 1.0f, 0.0f };
@@ -52,7 +62,7 @@ namespace Scenes {
 #ifdef DEBUG
 		float guiDelta{ 0.0f };
 		float guiCameraRotation{ 0.0f };
-		float guiSpecular{ 0.3f };
+		float guiSpecular{ 0.2f };
 		glm::vec3 guiSpecColor{ 0.35f, 0.35f, 0.44f };
 		constexpr size_t NANO_VEC_LEN{ 100 };
 		std::vector<long long> nanoVec;
@@ -69,7 +79,8 @@ namespace Scenes {
 		{
 			glm::vec4 ambientIntensity;
 			float lightAttenuation;
-			float padding[3];
+			float maxIntensity;
+			float padding[2];
 			PerLight lights[NUMBER_OF_LIGHTS];
 		} lightBlock;
 
@@ -81,6 +92,9 @@ namespace Scenes {
 	{
 		lightBlock.lights[0].cameraSpaceLightPos = glm::angleAxis(time * 2.0f * Constants::PI, vecZ) * sunDir;
 		CLEAR_COLOR = skyGradient.getLinear(time);
+		lightBlock.lights[0].lightIntensity = sunGradient.getLinear(time);
+		lightBlock.maxIntensity = maxGradient.getLinear(time);
+		lightBlock.ambientIntensity = ambientGradient.getLinear(time);
 	}
 
 	void Arctic::updateLightBuffer()
@@ -103,8 +117,33 @@ namespace Scenes {
 	{
 		lightBlock.ambientIntensity = ambientIntensity;
 		lightBlock.lightAttenuation = 4.0f * Constants::PI;
-		lightBlock.lights[0] = { sunDir, sunIntensity };
+		lightBlock.lights[0] = { sunDir, glm::vec4{1.0f} };
 		lightBlock.lights[1] = { pointPos[0], pointIntensity[0] };
+
+		// daylight cycle
+		skyGradient.insert(4.0f / 24.0f, glm::vec4{ 0.0f, 0.0f, 0.1f, 1.0f });
+		skyGradient.insert(6.5f / 24.0f, glm::vec4{ 0.4f, 0.25f, 0.2f, 1.0f });
+		skyGradient.insert(11.0f / 24.0f, glm::vec4{ 0.0f, 0.5f, 0.8f, 1.0f });
+		skyGradient.insert(14.0f / 24.0f, glm::vec4{ 0.0f, 0.5f, 0.8f, 1.0f });
+		skyGradient.insert(19.5f / 24.0f, glm::vec4{ 0.4f, 0.25f, 0.2f, 1.0f });
+		skyGradient.insert(22.0f / 24.0f, glm::vec4{ 0.0f, 0.0f, 0.1f, 1.0f });
+
+		sunGradient.insert(4.0f / 24.0f, glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f } *sunBaseIntensity);
+		sunGradient.insert(6.5f / 24.0f, glm::vec4{ 0.7f, 0.3f, 0.3f, 1.0f } *sunBaseIntensity);
+		sunGradient.insert(8.0f / 24.0f, glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f } *sunBaseIntensity);
+		sunGradient.insert(15.0f / 24.0f, glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f } *sunBaseIntensity);
+		sunGradient.insert(19.5f / 24.0f, glm::vec4{ 0.7f, 0.3f, 0.3f, 1.0f } *sunBaseIntensity);
+		sunGradient.insert(21.0f / 24.0f, glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f } *sunBaseIntensity);
+
+		maxGradient.insert(4.0f / 24.0f, nightMaxIntensity);
+		maxGradient.insert(8.0f / 24.0f, dayMaxIntensity);
+		maxGradient.insert(15.0f / 24.0f, dayMaxIntensity);
+		maxGradient.insert(21.0f / 24.0f, nightMaxIntensity);
+
+		ambientGradient.insert(4.0f / 24.0f, nightAmbient);
+		ambientGradient.insert(8.0f / 24.0f, dayAmbient);
+		ambientGradient.insert(15.0f / 24.0f, dayAmbient);
+		ambientGradient.insert(21.0f / 24.0f, nightAmbient);
 
 		glGenBuffers(1, &lightBuffer);
 		glBindBuffer(GL_UNIFORM_BUFFER, lightBuffer);
@@ -193,9 +232,8 @@ namespace Scenes {
 
 		updateCamera();
 
-		static float accumTime{ 0.0f };
-		accumTime = (accumTime + delta / dayCycleTime <= 1.0f) ? accumTime + delta / dayCycleTime : 0.0f;
-		updateLighting(accumTime);
+		timeOfDay = (timeOfDay + delta / dayCycleTime <= 1.0f) ? timeOfDay + delta / dayCycleTime : 0.0f;
+		updateLighting(timeOfDay);
 
 #ifdef DEBUG
 		penguin->get().material.block.specularShininess = guiSpecular;
@@ -215,6 +253,7 @@ namespace Scenes {
 		ImGui::SliderFloat("Camera Angle", &guiCameraRotation, 0.0f, 2.0f * Constants::PI);
 		ImGui::SliderFloat("Specular", &guiSpecular, 0.0f, 1.0f);
 		ImGui::ColorEdit3("Spec Color", (float*)& guiSpecColor); // Edit 3 floats representing a color
+		ImGui::Text("Time of day: %.2f hr", timeOfDay * 24);
 
 		long long nanoAvg{ std::accumulate(nanoVec.begin(), nanoVec.end(), 0) / NANO_VEC_LEN };
 

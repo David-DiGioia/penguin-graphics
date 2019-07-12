@@ -66,7 +66,12 @@ namespace Util {
 	{
 	public:
 		Gradient(T begin, T end)
-			:values{ KeyValue<float, T>{0.0f, begin}, KeyValue<float, T>{1.0f, end} }
+			: values{ KeyValue<float, T>{0.0f, begin}, KeyValue<float, T>{1.0f, end} }
+		{
+		}
+
+		Gradient(T beginEnd)
+			: Gradient{beginEnd, beginEnd}
 		{
 		}
 
