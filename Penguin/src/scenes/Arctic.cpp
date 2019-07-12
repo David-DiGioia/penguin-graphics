@@ -10,6 +10,7 @@
 
 #include "../Constants.h"
 #include "../UboBindings.h"
+#include "../Util.h"
 
 namespace Scenes {
 
@@ -36,7 +37,7 @@ namespace Scenes {
 		glm::vec4 sunIntensity{ 1.0f, 1.0f, 1.0f, 1.0f };
 		glm::vec4 ambientIntensity{ 0.2f, 0.2f, 0.2f, 1.0f };
 		float dayCycleTime{ 24.0f };
-
+		Util::Gradient<glm::vec4> skyGradient{glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f }, glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f }};
 
 		constexpr static int NUMBER_OF_LIGHTS{ 2 };
 		// subtract 1 since zeroth index is directional light
@@ -73,12 +74,13 @@ namespace Scenes {
 		} lightBlock;
 
 		unsigned int lightBuffer;
+	}
 
-		// Time is normalized time of day
-		void updateLighting(float time)
-		{
-			lightBlock.lights[0].cameraSpaceLightPos = glm::angleAxis(time * 2.0f * Constants::PI, vecZ) * sunDir;
-		}
+	// Time is normalized time of day
+	void Arctic::updateLighting(float time)
+	{
+		lightBlock.lights[0].cameraSpaceLightPos = glm::angleAxis(time * 2.0f * Constants::PI, vecZ) * sunDir;
+		CLEAR_COLOR = skyGradient.getLinear(time);
 	}
 
 	void Arctic::updateLightBuffer()
@@ -190,7 +192,7 @@ namespace Scenes {
 		}
 
 		updateCamera();
-		
+
 		static float accumTime{ 0.0f };
 		accumTime = (accumTime + delta / dayCycleTime <= 1.0f) ? accumTime + delta / dayCycleTime : 0.0f;
 		updateLighting(accumTime);

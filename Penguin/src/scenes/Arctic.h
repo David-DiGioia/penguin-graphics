@@ -12,9 +12,10 @@ namespace Scenes {
 	struct Arctic
 	{
 		const int MAX_MODELS{ 16 };
-		const glm::vec4 CLEAR_COLOR{ 0.0f, 0.5f, 0.8f, 1.0f };
+		glm::vec4 CLEAR_COLOR{ 0.0f, 0.5f, 0.8f, 1.0f };
 		std::vector<MeshData::Model> models;
 		std::unique_ptr<MeshData::Camera> activeCamera;
+		void updateLighting(float time);
 		void updateLightBuffer();
 		void transformPointLights(const glm::mat4& worldToCamera);
 		void initLights(unsigned int program);
@@ -23,12 +24,6 @@ namespace Scenes {
 		void gui();
 		void keyEvent(int key, int scancode, int action, int mods);
 		// -----------------------------------------------------------
-
-		//glm::vec4 dirToLight{ 0.866f, 0.5f, 0.0f, 0.0f };
-		//glm::vec4 lightIntensity{ 50.0f, 50.0f, 50.0f, 1.0f };
-		//glm::vec4 ambientLightIntensity{ 0.5f, 0.5f, 0.5f, 1.0f };
-
-		//glm::vec3 pointLightPos{ 0.0f, 1.5f, 0.0f };
 
 #ifdef DEBUG
 		long long renderTimeNano{ 0 };
