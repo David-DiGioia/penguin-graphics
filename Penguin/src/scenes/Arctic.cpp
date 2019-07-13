@@ -4,6 +4,7 @@
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtx/quaternion.hpp"
 #include "glm/gtx/vector_angle.hpp"
+#include "glm/glm.hpp"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
@@ -36,14 +37,14 @@ namespace Scenes {
 		const float nightMaxIntensity{ 0.5f };
 		const float dayMaxIntensity{ 12.0f };
 
-		const glm::vec4 nightAmbient{ 0.1f, 0.1f, 0.1f, 1.0f };
-		const glm::vec4 dayAmbient{ 2.0f, 2.0f, 2.0f, 1.0f };
+		const glm::vec4 nightAmbient{ 0.01f, 0.01f, 0.012f, 1.0f };
+		const glm::vec4 dayAmbient{ 1.3f, 1.3f, 1.5f, 1.0f };
 
 		glm::vec4 sunDir{ 0.0f, -1.0f, 0.0f, 0.0f };
 		float sunBaseIntensity{ 10.0f };
 		glm::vec4 ambientIntensity{ 0.2f, 0.2f, 0.2f, 1.0f };
 		float dayCycleTime{ 24.0f };
-		Util::Gradient<glm::vec4> skyGradient{ glm::vec4{ 0.0f, 0.0f, 0.1f, 1.0f }};
+		Util::Gradient<glm::vec4> skyGradient{ glm::vec4{ 0.0f, 0.0f, 0.02f, 1.0f }};
 		Util::Gradient<glm::vec4> sunGradient{ glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f } };
 		Util::Gradient<glm::vec4> ambientGradient{ nightAmbient };
 		Util::Gradient<float> maxGradient{ nightMaxIntensity };
@@ -80,7 +81,8 @@ namespace Scenes {
 			glm::vec4 ambientIntensity;
 			float lightAttenuation;
 			float maxIntensity;
-			float padding[2];
+			float gamma;
+			float padding;
 			PerLight lights[NUMBER_OF_LIGHTS];
 		} lightBlock;
 
@@ -91,6 +93,7 @@ namespace Scenes {
 	void Arctic::updateLighting(float time)
 	{
 		lightBlock.lights[0].cameraSpaceLightPos = glm::angleAxis(time * 2.0f * Constants::PI, vecZ) * sunDir;
+		//CLEAR_COLOR = glm::pow(skyGradient.getLinear(time), glm::vec4{ glm::vec3{lightBlock.gamma}, 1.0f });
 		CLEAR_COLOR = skyGradient.getLinear(time);
 		lightBlock.lights[0].lightIntensity = sunGradient.getLinear(time);
 		lightBlock.maxIntensity = maxGradient.getLinear(time);
@@ -117,22 +120,23 @@ namespace Scenes {
 	{
 		lightBlock.ambientIntensity = ambientIntensity;
 		lightBlock.lightAttenuation = 4.0f * Constants::PI;
+		lightBlock.gamma = 1.0f / 2.2f;
 		lightBlock.lights[0] = { sunDir, glm::vec4{1.0f} };
 		lightBlock.lights[1] = { pointPos[0], pointIntensity[0] };
 
 		// daylight cycle
-		skyGradient.insert(4.0f / 24.0f, glm::vec4{ 0.0f, 0.0f, 0.1f, 1.0f });
+		skyGradient.insert(4.0f / 24.0f, glm::vec4{ 0.0f, 0.00f, 0.02f, 1.0f });
 		skyGradient.insert(6.5f / 24.0f, glm::vec4{ 0.4f, 0.25f, 0.2f, 1.0f });
 		skyGradient.insert(11.0f / 24.0f, glm::vec4{ 0.0f, 0.5f, 0.8f, 1.0f });
 		skyGradient.insert(14.0f / 24.0f, glm::vec4{ 0.0f, 0.5f, 0.8f, 1.0f });
-		skyGradient.insert(19.5f / 24.0f, glm::vec4{ 0.4f, 0.25f, 0.2f, 1.0f });
-		skyGradient.insert(22.0f / 24.0f, glm::vec4{ 0.0f, 0.0f, 0.1f, 1.0f });
+		skyGradient.insert(18.5f / 24.0f, glm::vec4{ 0.4f, 0.25f, 0.2f, 1.0f });
+		skyGradient.insert(21.0f / 24.0f, glm::vec4{ 0.0f, 0.00f, 0.02f, 1.0f });
 
 		sunGradient.insert(4.0f / 24.0f, glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f } *sunBaseIntensity);
 		sunGradient.insert(6.5f / 24.0f, glm::vec4{ 0.7f, 0.3f, 0.3f, 1.0f } *sunBaseIntensity);
-		sunGradient.insert(8.0f / 24.0f, glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f } *sunBaseIntensity);
-		sunGradient.insert(15.0f / 24.0f, glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f } *sunBaseIntensity);
-		sunGradient.insert(19.5f / 24.0f, glm::vec4{ 0.7f, 0.3f, 0.3f, 1.0f } *sunBaseIntensity);
+		sunGradient.insert(8.0f / 24.0f, glm::vec4{ 1.2f, 1.2f, 1.0f, 1.0f } *sunBaseIntensity);
+		sunGradient.insert(15.0f / 24.0f, glm::vec4{ 1.1f, 1.0f, 0.9f, 1.0f } *sunBaseIntensity);
+		sunGradient.insert(18.5f / 24.0f, glm::vec4{ 0.5f, 0.2f, 0.2f, 1.0f } *sunBaseIntensity);
 		sunGradient.insert(21.0f / 24.0f, glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f } *sunBaseIntensity);
 
 		maxGradient.insert(4.0f / 24.0f, nightMaxIntensity);

@@ -30,8 +30,6 @@ std::vector<VertexBuffer> vbos;
 std::vector<VertexArray> vaos;
 
 glm::mat4 cameraToClip;
-//GLint u_dirToLight;
-//GLint u_modelSpaceLightPos;
 GLint u_cameraSpaceLightPos;
 GLint u_lightIntensity;
 GLint u_ambientLightIntensity;
@@ -79,17 +77,9 @@ void init()
 	scene.initLights(program->getID());
 
 	// uniforms
-	//u_dirToLight = program->getUniform("u_dirToLight");
-	//u_modelSpaceLightPos = program->getUniform("u_modelSpaceLightPos");
-	//u_cameraSpaceLightPos = program->getUniform("u_cameraSpaceLightPos");
-	//u_lightIntensity = program->getUniform("u_lightIntensity");
-	//u_ambientLightIntensity = program->getUniform("u_ambientLightIntensity");
 	u_modelToCamera = program->getUniform("u_modelToCamera");
 	u_cameraToClip = program->getUniform("u_cameraToClip");
 	u_normalModelToCameraMatrix = program->getUniform("u_normalModelToCameraMatrix");
-
-	//program->setUniform4fv(u_lightIntensity, scene.lightIntensity);
-	//program->setUniform4fv(u_ambientLightIntensity, scene.ambientLightIntensity);
 }
 
 glm::mat4 createCameraMatrix(const MeshData::Transform& transform)
@@ -117,8 +107,6 @@ void render()
 
 	program->bind();
 	program->setUniformMat4f(u_cameraToClip, cameraToClip);
-	//program->setUniform3fv(u_dirToLight, worldToCamera * scene.dirToLight);
-	//program->setUniform3fv(u_cameraSpaceLightPos, worldToCamera * glm::vec4(scene.pointLightPos, 1.0f));
 	scene.transformPointLights(worldToCamera);
 	scene.updateLightBuffer();
 
@@ -127,13 +115,11 @@ void render()
 		glm::mat4 modelToWorld{ createModelMatrix(scene.models[i].transform) };
 		glm::mat4 modelToCamera{ worldToCamera * modelToWorld };
 
-		//program->setUniform3fv(u_modelSpaceLightPos, glm::inverse(modelToWorld) * glm::vec4(scene.pointLightPos, 1.0f));
 		program->setUniformMat4f(u_modelToCamera, modelToCamera);
 		program->setUniformMat3f(u_normalModelToCameraMatrix, modelToCamera);
 
 		vaos[i].bind();
 		scene.models[i].material.bind();
-		//scene.models[i].colorMap.bind(0);
 
 		glDrawArrays(GL_TRIANGLES, 0, scene.models[i].mesh.vertices.size());
 	}
@@ -186,6 +172,9 @@ int main(void)
 	// Enables transparency in textures
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	// Gamma correct then render
+	glEnable(GL_FRAMEBUFFER_SRGB);
 
 	// Culling
 	glEnable(GL_CULL_FACE);

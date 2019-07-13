@@ -27,6 +27,7 @@ layout(std140, binding = 1) uniform Light
 	vec4 ambientIntensity;
 	float lightAttenuation;
 	float maxIntensity;
+	float gamma;
 	PerLight lights[numberOfLights];
 } Lgt;
 
@@ -89,6 +90,8 @@ void main()
 		accumLighting += computeLighting(Lgt.lights[light], texColor);
 	}
 
-	outputColor = accumLighting / Lgt.maxIntensity;
+	accumLighting /= Lgt.maxIntensity;
+	//outputColor = pow(accumLighting, vec4(Lgt.gamma, Lgt.gamma, Lgt.gamma, 1.0f));
+	outputColor = accumLighting;
 	outputColor.a = 1.0f;
 }
