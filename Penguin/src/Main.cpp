@@ -56,8 +56,8 @@ Scenes::Arctic scene;
 
 float vertexPositions[] = {
 	0.75f, 0.75f, 0.0f,
-	0.75f, -0.75f, 0.0f,
 	-0.75f, -0.75f, 0.0f,
+	0.75f, -0.75f, 0.0f,
 };
 
 GLuint theProgram;
@@ -93,7 +93,7 @@ void initTemp()
 	};
 
 	programBillboard = std::make_unique<Program>(shadersBillboard);
-	theProgram = programBillboard->getID();
+	//theProgram = programBillboard->getID();
 
 	//// vbo
 	//glGenBuffers(1, &vbo);
@@ -107,16 +107,6 @@ void initTemp()
 	//glBindVertexArray(vao);
 	vaoPtr = std::make_unique<VertexArray>();
 	vaoPtr->bind();
-}
-
-void renderTemp()
-{
-	glClearColor(scene.CLEAR_COLOR.r, scene.CLEAR_COLOR.g, scene.CLEAR_COLOR.b, scene.CLEAR_COLOR.a);
-	glClearDepth(1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	//glUseProgram(theProgram);
-	programBillboard->bind();
 
 	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	//glEnableVertexAttribArray(0);
@@ -124,6 +114,17 @@ void renderTemp()
 	VertexBufferLayout layout;
 	layout.Push<float>(3);
 	vaoPtr->addBuffer(*vboPtr, layout);
+}
+
+void renderTemp()
+{
+	//glClearColor(scene.CLEAR_COLOR.r, scene.CLEAR_COLOR.g, scene.CLEAR_COLOR.b, scene.CLEAR_COLOR.a);
+	//glClearDepth(1.0f);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	//glUseProgram(theProgram);
+	programBillboard->bind();
+	vaoPtr->bind();
 
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -134,11 +135,12 @@ void renderTemp()
 
 void init()
 {
+	initTemp();
+
 	VertexBufferLayout layout;
 	layout.Push<float>(3); // position
 	layout.Push<float>(2); // textureCoords
 	layout.Push<float>(3); // normals
-
 
 	// Beware! If vector has to reallocate for vaos or vbos, destructors will be called, deleting gl buffers
 	for (int i{ 0 }; i < scene.models.size(); ++i)
@@ -206,32 +208,34 @@ void render()
 	glClearDepth(1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//glm::mat4 worldToCamera{ createCameraMatrix(scene.activeCamera->transform) };
+	renderTemp();
 
-	//program->bind();
+	glm::mat4 worldToCamera{ createCameraMatrix(scene.activeCamera->transform) };
 
-	////program->setUniformMat4f(u_cameraToClip, cameraToClip);
-	//glBindBuffer(GL_UNIFORM_BUFFER, cameraToClipBuffer);
-	//glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &cameraToClip);
-	//glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	program->bind();
 
-	//scene.transformPointLights(worldToCamera);
-	//scene.updateLightBuffer();
+	//program->setUniformMat4f(u_cameraToClip, cameraToClip);
+	glBindBuffer(GL_UNIFORM_BUFFER, cameraToClipBuffer);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &cameraToClip);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-	//for (int i{ 0 }; i < scene.models.size(); ++i)
-	//{
-	//	glm::mat4 modelToWorld{ createModelMatrix(scene.models[i].transform) };
-	//	glm::mat4 modelToCamera{ worldToCamera * modelToWorld };
+	scene.transformPointLights(worldToCamera);
+	scene.updateLightBuffer();
 
-	//	program->setUniformMat4f(u_modelToCamera, modelToCamera);
-	//	program->setUniformMat3f(u_normalModelToCameraMatrix, modelToCamera);
+	for (int i{ 0 }; i < scene.models.size(); ++i)
+	{
+		glm::mat4 modelToWorld{ createModelMatrix(scene.models[i].transform) };
+		glm::mat4 modelToCamera{ worldToCamera * modelToWorld };
 
-	//	vaos[i].bind();
-	//	scene.models[i].material.bind();
+		program->setUniformMat4f(u_modelToCamera, modelToCamera);
+		program->setUniformMat3f(u_normalModelToCameraMatrix, modelToCamera);
 
-	//	glDrawArrays(GL_TRIANGLES, 0, scene.models[i].mesh.vertices.size());
-	//}
-	//program->unbind();
+		vaos[i].bind();
+		scene.models[i].material.bind();
+
+		glDrawArrays(GL_TRIANGLES, 0, scene.models[i].mesh.vertices.size());
+	}
+	program->unbind();
 }
 
 void windowResize(GLFWwindow* window, int width, int height)
@@ -285,10 +289,10 @@ int main(void)
 	// Gamma correct then render
 	glEnable(GL_FRAMEBUFFER_SRGB);
 
-	//// Culling
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_BACK);
-	//glFrontFace(GL_CCW);
+	// Culling
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CCW);
 
 	// Depth testing
 	glEnable(GL_DEPTH_TEST);
@@ -308,8 +312,7 @@ int main(void)
 	vaos.reserve(scene.MAX_MODELS);
 
 	scene.init();
-	//init();
-	initTemp();
+	init();
 
 	// Initial call to resize so matrix has correct aspect
 	{
@@ -349,8 +352,7 @@ int main(void)
 #ifdef DEBUG
 		Util::Timer timer;
 #endif
-		//render();
-		renderTemp();
+		render();
 #ifdef DEBUG
 		scene.renderTimeNano = timer.getNanoseconds();
 #endif
