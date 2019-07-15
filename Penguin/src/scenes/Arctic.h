@@ -15,6 +15,7 @@ namespace Scenes {
 		glm::vec4 CLEAR_COLOR{ 0.0f, 0.5f, 0.8f, 1.0f };
 		std::vector<MeshData::Model> models;
 		std::unique_ptr<MeshData::Camera> activeCamera;
+		~Arctic();
 		void updateLighting(float time);
 		void updateLightBuffer();
 		void transformPointLights(const glm::mat4& worldToCamera);

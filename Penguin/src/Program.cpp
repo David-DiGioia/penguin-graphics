@@ -65,6 +65,11 @@ void Program::setUniform1i(GLint uniform, int n)
 	glUniform1i(uniform, n);
 }
 
+void Program::setUniform1f(GLint uniform, float f)
+{
+	glUniform1f(uniform, f);
+}
+
 void Program::setUniform3fv(GLint uniform, const glm::vec3& vec)
 {
 	glUniform3fv(uniform, 1, glm::value_ptr(vec));

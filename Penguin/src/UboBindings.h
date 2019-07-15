@@ -7,5 +7,6 @@ namespace UboBindings {
 
 	constexpr unsigned int MATERIAL{ 0 };
 	constexpr unsigned int LIGHT{ 1 };
+	constexpr unsigned int CAMERA_TO_CLIP{ 2 };
 
 }

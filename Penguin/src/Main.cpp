@@ -23,8 +23,10 @@
 #include "Program.h"
 #include "MeshData.h"
 #include "scenes/Scenes.h"
+#include "UboBindings.h"
 
 std::unique_ptr<Program> program;
+std::unique_ptr<Program> programBillboard;
 
 std::vector<VertexBuffer> vbos;
 std::vector<VertexArray> vaos;
@@ -37,10 +39,26 @@ GLint u_modelToCamera;
 GLint u_cameraToClip;
 GLint u_normalModelToCameraMatrix;
 
+GLuint cameraToClipBuffer;
+
+
+
+
+std::unique_ptr<VertexArray> vao2;
+std::unique_ptr<VertexBuffer> vbo2;
+
+
 // NOTICE: CHANGING TYPE OF "scene" DETERMINES WHICH SCENE IS ACTIVE
 // -----------------------------------------------------------------
 Scenes::Arctic scene;
 // -----------------------------------------------------------------
+
+
+float data[]{
+-0.5f, -0.5f, -2.0f,
+0.5f, 0.5f, -2.0f,
+0.5f, -0.5f, -2.0f,
+};
 
 void init()
 {
@@ -63,6 +81,30 @@ void init()
 		vaos[i].addBuffer(vbos[i], layout);
 	}
 
+	std::vector<GLuint> shadersBillboard{
+		Util::compileShader(GL_VERTEX_SHADER, "data/shaders/TEST.vert"),
+		Util::compileShader(GL_FRAGMENT_SHADER, "data/shaders/TEST.frag")
+	};
+
+	programBillboard = std::make_unique<Program>(shadersBillboard);
+	programBillboard->bind();
+
+	VertexBufferLayout layout2;
+	layout2.Push<float>(3); // position
+
+	vao2 = std::make_unique<VertexArray>();
+
+	vbo2 = std::make_unique<VertexBuffer>(&data, sizeof(data));
+	vbo2->bind();
+
+	vao2->addBuffer(*vbo2, layout2);
+	programBillboard->unbind();
+
+	//GLint u_sphereRadius{ programBillboard->getUniform("u_sphereRadius") };
+	//GLint u_cameraSpherePos{ programBillboard->getUniform("u_cameraSpherePos") };
+	//programBillboard->setUniform1f(u_sphereRadius, 2.0f);
+	//programBillboard->setUniform3fv(u_cameraSpherePos, glm::vec3{ 0.0f, 0.0f, -3.0f });
+
 	std::vector<GLuint> shaders{
 		Util::compileShader(GL_VERTEX_SHADER, "data/shaders/PointLight.vert"),
 		Util::compileShader(GL_FRAGMENT_SHADER, "data/shaders/HDR.frag")
@@ -78,8 +120,15 @@ void init()
 
 	// uniforms
 	u_modelToCamera = program->getUniform("u_modelToCamera");
-	u_cameraToClip = program->getUniform("u_cameraToClip");
+	//u_cameraToClip = program->getUniform("u_cameraToClip");
 	u_normalModelToCameraMatrix = program->getUniform("u_normalModelToCameraMatrix");
+
+	glGenBuffers(1, &cameraToClipBuffer);
+	glBindBuffer(GL_UNIFORM_BUFFER, cameraToClipBuffer);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), nullptr, GL_STATIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	glBindBufferBase(GL_UNIFORM_BUFFER, UboBindings::CAMERA_TO_CLIP, cameraToClipBuffer);
 }
 
 glm::mat4 createCameraMatrix(const MeshData::Transform& transform)
@@ -106,7 +155,12 @@ void render()
 	glm::mat4 worldToCamera{ createCameraMatrix(scene.activeCamera->transform) };
 
 	program->bind();
-	program->setUniformMat4f(u_cameraToClip, cameraToClip);
+
+	//program->setUniformMat4f(u_cameraToClip, cameraToClip);
+	glBindBuffer(GL_UNIFORM_BUFFER, cameraToClipBuffer);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &cameraToClip);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
 	scene.transformPointLights(worldToCamera);
 	scene.updateLightBuffer();
 
@@ -123,6 +177,14 @@ void render()
 
 		glDrawArrays(GL_TRIANGLES, 0, scene.models[i].mesh.vertices.size());
 	}
+	program->unbind();
+
+	programBillboard->bind();
+	vao2->bind();
+
+	// Temp, make this more robust later
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	programBillboard->unbind();
 }
 
 void windowResize(GLFWwindow* window, int width, int height)

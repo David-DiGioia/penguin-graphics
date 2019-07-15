@@ -76,6 +76,7 @@ MessageCallback(GLenum source,
 		(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
 		typeString, type, severityString, severity, message);
 
+	debugBreak = false;
 	if (debugBreak)
 		DEBUG_BREAK;
 }

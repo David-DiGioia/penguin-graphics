@@ -479,6 +479,10 @@
     <None Include="data\shaders\PointLight.vert" />
     <None Include="data\shaders\Specular.frag" />
     <None Include="data\shaders\HDR.frag" />
+    <None Include="data\shaders\Billboard.vert" />
+    <None Include="data\shaders\Billboard.frag" />
+    <None Include="data\shaders\TEST.vert" />
+    <None Include="data\shaders\TEST.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core.h">
