@@ -85,7 +85,7 @@ void impostor(out vec3 cameraPos, out vec3 cameraNormal)
 	if (distSqr > 1.0f)
 		discard;
 
-	cameraNormal = vec3(mapping, sqrt(distSqr));
+	cameraNormal = vec3(mapping, sqrt(1.0f - distSqr));
 	cameraPos = (cameraNormal * u_sphereRadius) + u_cameraSpherePos;
 }
 
