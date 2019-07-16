@@ -26,6 +26,7 @@
 #include "UboBindings.h"
 
 std::unique_ptr<Program> program;
+std::unique_ptr<Program> programTriangle;
 std::unique_ptr<Program> programBillboard;
 
 std::vector<VertexBuffer> vbos;
@@ -41,76 +42,37 @@ GLint u_normalModelToCameraMatrix;
 
 GLuint cameraToClipBuffer;
 
-
-
-
-std::unique_ptr<VertexArray> vao2;
-std::unique_ptr<VertexBuffer> vbo2;
-
-
 // NOTICE: CHANGING TYPE OF "scene" DETERMINES WHICH SCENE IS ACTIVE
 // -----------------------------------------------------------------
 Scenes::Arctic scene;
 // -----------------------------------------------------------------
 
-
+// These coordinates are in clip space....
+// The z range is [-1, 1], so they're invisible outside
+// this range.
 float vertexPositions[] = {
-	0.75f, 0.75f, 0.0f,
-	-0.75f, -0.75f, 0.0f,
-	0.75f, -0.75f, 0.0f,
+	0.5f, 0.5f, 0.0f,
+	-0.5f, -0.5f, 0.0f,
+	0.5f, -0.5f, 0.0f,
 };
-
-GLuint theProgram;
-GLuint vbo;
-GLuint vao;
 
 std::unique_ptr<VertexBuffer> vboPtr;
 std::unique_ptr<VertexArray> vaoPtr;
 
 void initTemp()
 {
-	//VertexBufferLayout layout2;
-	//layout2.Push<float>(3); // position
-
-	//vao2 = std::make_unique<VertexArray>();
-	//vao2->bind();
-
-	//vbo2 = std::make_unique<VertexBuffer>(data, sizeof(data));
-	//vbo2->bind();
-
-	//vao2->addBuffer(*vbo2, layout2);
-
-	//std::vector<GLuint> shadersBillboard{
-	//	Util::compileShader(GL_VERTEX_SHADER, "data/shaders/TEST.vert"),
-	//	Util::compileShader(GL_FRAGMENT_SHADER, "data/shaders/TEST.frag")
-	//};
-
-	//programBillboard = std::make_unique<Program>(shadersBillboard);
-
 	std::vector<GLuint> shadersBillboard{
 		Util::compileShader(GL_VERTEX_SHADER, "data/shaders/TEST.vert"),
 		Util::compileShader(GL_FRAGMENT_SHADER, "data/shaders/TEST.frag")
 	};
 
-	programBillboard = std::make_unique<Program>(shadersBillboard);
-	//theProgram = programBillboard->getID();
+	programTriangle = std::make_unique<Program>(shadersBillboard);
 
-	//// vbo
-	//glGenBuffers(1, &vbo);
-	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW);
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 	vboPtr = std::make_unique<VertexBuffer>(vertexPositions, sizeof(vertexPositions));
 
-	//// vao
-	//glGenVertexArrays(1, &vao);
-	//glBindVertexArray(vao);
 	vaoPtr = std::make_unique<VertexArray>();
 	vaoPtr->bind();
 
-	//glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	//glEnableVertexAttribArray(0);
-	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	VertexBufferLayout layout;
 	layout.Push<float>(3);
 	vaoPtr->addBuffer(*vboPtr, layout);
@@ -118,24 +80,46 @@ void initTemp()
 
 void renderTemp()
 {
-	//glClearColor(scene.CLEAR_COLOR.r, scene.CLEAR_COLOR.g, scene.CLEAR_COLOR.b, scene.CLEAR_COLOR.a);
-	//glClearDepth(1.0f);
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	programTriangle->bind();
+	vaoPtr->bind();
 
-	//glUseProgram(theProgram);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+
+	programTriangle->unbind();
+}
+
+void initBillboard()
+{
+	std::vector<GLuint> shadersBillboard{
+		Util::compileShader(GL_VERTEX_SHADER, "data/shaders/Billboard.vert"),
+		Util::compileShader(GL_FRAGMENT_SHADER, "data/shaders/Billboard.frag")
+	};
+
+	programBillboard = std::make_unique<Program>(shadersBillboard);
+	programBillboard->bind();
+
+	GLint u_sphereRadius{ programBillboard->getUniform("u_sphereRadius") };
+	GLint u_cameraSpherePos{ programBillboard->getUniform("u_cameraSpherePos") };
+	programBillboard->setUniform1f(u_sphereRadius, 1.0f);
+	programBillboard->setUniform3fv(u_cameraSpherePos, glm::vec3{ 0.0f, 0.0f, -0.5f });
+
+	vaoPtr = std::make_unique<VertexArray>();
+	vaoPtr->bind();
+}
+
+void renderBillboard()
+{
 	programBillboard->bind();
 	vaoPtr->bind();
 
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 
-	//glDisableVertexAttribArray(0);
-	//glUseProgram(0);
-	programBillboard->unbind();
+	programTriangle->unbind();
 }
 
 void init()
 {
-	initTemp();
+	initBillboard();
 
 	VertexBufferLayout layout;
 	layout.Push<float>(3); // position
@@ -155,11 +139,6 @@ void init()
 		vaos[i].addBuffer(vbos[i], layout);
 	}
 
-	//GLint u_sphereRadius{ programBillboard->getUniform("u_sphereRadius") };
-	//GLint u_cameraSpherePos{ programBillboard->getUniform("u_cameraSpherePos") };
-	//programBillboard->setUniform1f(u_sphereRadius, 2.0f);
-	//programBillboard->setUniform3fv(u_cameraSpherePos, glm::vec3{ 0.0f, 0.0f, -3.0f });
-
 	std::vector<GLuint> shaders{
 		Util::compileShader(GL_VERTEX_SHADER, "data/shaders/PointLight.vert"),
 		Util::compileShader(GL_FRAGMENT_SHADER, "data/shaders/HDR.frag")
@@ -175,7 +154,6 @@ void init()
 
 	// uniforms
 	u_modelToCamera = program->getUniform("u_modelToCamera");
-	//u_cameraToClip = program->getUniform("u_cameraToClip");
 	u_normalModelToCameraMatrix = program->getUniform("u_normalModelToCameraMatrix");
 
 	glGenBuffers(1, &cameraToClipBuffer);
@@ -208,16 +186,16 @@ void render()
 	glClearDepth(1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	renderTemp();
-
 	glm::mat4 worldToCamera{ createCameraMatrix(scene.activeCamera->transform) };
-
-	program->bind();
 
 	//program->setUniformMat4f(u_cameraToClip, cameraToClip);
 	glBindBuffer(GL_UNIFORM_BUFFER, cameraToClipBuffer);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &cameraToClip);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	renderBillboard();
+
+	program->bind();
 
 	scene.transformPointLights(worldToCamera);
 	scene.updateLightBuffer();
@@ -290,9 +268,9 @@ int main(void)
 	glEnable(GL_FRAMEBUFFER_SRGB);
 
 	// Culling
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	glFrontFace(GL_CCW);
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_BACK);
+	//glFrontFace(GL_CCW);
 
 	// Depth testing
 	glEnable(GL_DEPTH_TEST);
