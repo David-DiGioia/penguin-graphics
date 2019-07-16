@@ -1,6 +1,6 @@
 #version 460 core
 
-in vec2 mapping;
+in vec2 v_mapping;
 
 layout(location = 0) out vec4 outputColor;
 
@@ -81,12 +81,20 @@ vec4 computeLighting(in PerLight light, in vec4 diffuse, in vec3 cameraPos, in v
 
 void impostor(out vec3 cameraPos, out vec3 cameraNormal)
 {
-	float distSqr = dot(mapping, mapping);
-	if (distSqr > 1.0f)
+	vec3 cameraPlanePos = vec3(v_mapping * u_sphereRadius, 0.0) + u_cameraSpherePos;
+	vec3 dir = normalize(cameraPlanePos);
+
+	float B = 2.0f * dot(dir, -u_cameraSpherePos);
+	float C = dot(u_cameraSpherePos, u_cameraSpherePos) - (u_sphereRadius * u_sphereRadius);
+
+	float determinant = (B * B) - (4.0f * C);
+	if (determinant < 0.0f)
 		discard;
 
-	cameraNormal = vec3(mapping, sqrt(1.0f - distSqr));
-	cameraPos = (cameraNormal * u_sphereRadius) + u_cameraSpherePos;
+	float t = (-B - sqrt(determinant)) / 2.0f;
+
+	cameraPos = dir * t;
+	cameraNormal = normalize(cameraPos - u_cameraSpherePos);
 }
 
 void main()
