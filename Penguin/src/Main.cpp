@@ -101,7 +101,7 @@ void initBillboard()
 	GLint u_sphereRadius{ programBillboard->getUniform("u_sphereRadius") };
 	GLint u_cameraSpherePos{ programBillboard->getUniform("u_cameraSpherePos") };
 	programBillboard->setUniform1f(u_sphereRadius, 1.0f);
-	programBillboard->setUniform3fv(u_cameraSpherePos, glm::vec3{ 0.0f, 0.0f, -0.5f });
+	programBillboard->setUniform3fv(u_cameraSpherePos, glm::vec3{ 0.0f, 0.0f, -3.0f });
 
 	vaoPtr = std::make_unique<VertexArray>();
 	vaoPtr->bind();
@@ -112,7 +112,7 @@ void renderBillboard()
 	programBillboard->bind();
 	vaoPtr->bind();
 
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
 	programTriangle->unbind();
 }

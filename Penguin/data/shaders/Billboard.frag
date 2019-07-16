@@ -91,22 +91,22 @@ void impostor(out vec3 cameraPos, out vec3 cameraNormal)
 
 void main()
 {
-	//vec3 cameraPos;
-	//vec3 cameraNormal;
-	//
-	//vec4 diffuse = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	//
-	//impostor(cameraPos, cameraNormal);
-	//
-	//vec4 accumLighting = diffuse * Lgt.ambientIntensity;
-	//for (int light = 0; light < numberOfLights; ++light)
-	//{
-	//	accumLighting += computeLighting(Lgt.lights[light],
-	//		diffuse, cameraPos, cameraNormal);
-	//}
-	//
-	//accumLighting /= Lgt.maxIntensity;
-	//outputColor = accumLighting;
-	//outputColor.a = 1.0f;
-	outputColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+	vec3 cameraPos;
+	vec3 cameraNormal;
+	
+	vec4 diffuse = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	
+	impostor(cameraPos, cameraNormal);
+	
+	vec4 accumLighting = diffuse * Lgt.ambientIntensity;
+	for (int light = 0; light < numberOfLights; ++light)
+	{
+		accumLighting += computeLighting(Lgt.lights[light],
+			diffuse, cameraPos, cameraNormal);
+	}
+	
+	accumLighting /= Lgt.maxIntensity;
+	outputColor = accumLighting;
+	outputColor.a = 1.0f;
+	//outputColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 }
