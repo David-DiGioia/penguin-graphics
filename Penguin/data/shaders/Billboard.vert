@@ -23,14 +23,14 @@ void main()
         offset = vec2(-u_sphereRadius, -u_sphereRadius);
         break;
     case 1:
-        //Top-left
-        mapping = vec2(-1.0, 1.0);
-        offset = vec2(-u_sphereRadius, u_sphereRadius);
-        break;
-    case 2:
         //Bottom-right
         mapping = vec2(1.0, -1.0);
         offset = vec2(u_sphereRadius, -u_sphereRadius);
+        break;
+    case 2:
+        //Top-left
+        mapping = vec2(-1.0, 1.0);
+        offset = vec2(-u_sphereRadius, u_sphereRadius);
         break;
     case 3:
         //Top-right
@@ -38,19 +38,6 @@ void main()
         offset = vec2(u_sphereRadius, u_sphereRadius);
         break;
     }
-    
-    //switch(gl_VertexID)
-    //{
-    //case 0:
-	//	gl_Position = vec4(0.5f, 0.5f, 0.0f, 1.0f);
-    //    break;
-    //case 1:
-	//	gl_Position = vec4(-0.5f, -0.5f, 0.0f, 1.0f);
-    //    break;
-    //case 2:
-	//	gl_Position = vec4(0.5f, -0.5f, 0.0f, 1.0f);
-    //    break;
-    //}
 
     vec4 cameraCornerPos = vec4(u_cameraSpherePos, 1.0);
     cameraCornerPos.xy += offset;

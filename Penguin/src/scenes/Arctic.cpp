@@ -40,7 +40,7 @@ namespace Scenes {
 		const glm::vec4 nightAmbient{ 0.01f, 0.01f, 0.012f, 1.0f };
 		const glm::vec4 dayAmbient{ 1.3f, 1.3f, 1.5f, 1.0f };
 
-		glm::vec4 sunDir{ 0.0f, -1.0f, 0.0f, 0.0f };
+		glm::vec4 sunDirWorld{ 0.0f, -1.0f, 0.0f, 0.0f };
 		float sunBaseIntensity{ 10.0f };
 		glm::vec4 ambientIntensity{ 0.2f, 0.2f, 0.2f, 1.0f };
 		float dayCycleTime{ 24.0f };
@@ -86,6 +86,8 @@ namespace Scenes {
 			PerLight lights[NUMBER_OF_LIGHTS];
 		} lightBlock;
 
+		glm::mat4 worldToCameraMat;
+
 		unsigned int lightBuffer;
 	}
 
@@ -97,8 +99,7 @@ namespace Scenes {
 	// Time is normalized time of day
 	void Arctic::updateLighting(float time)
 	{
-		lightBlock.lights[0].cameraSpaceLightPos = glm::angleAxis(time * 2.0f * Constants::PI, vecZ) * sunDir;
-		//CLEAR_COLOR = glm::pow(skyGradient.getLinear(time), glm::vec4{ glm::vec3{lightBlock.gamma}, 1.0f });
+		lightBlock.lights[0].cameraSpaceLightPos = worldToCameraMat * (glm::angleAxis(time * 2.0f * Constants::PI, vecZ) * sunDirWorld);
 		CLEAR_COLOR = skyGradient.getLinear(time);
 		lightBlock.lights[0].lightIntensity = sunGradient.getLinear(time);
 		lightBlock.maxIntensity = maxGradient.getLinear(time);
@@ -114,6 +115,7 @@ namespace Scenes {
 
 	void Arctic::transformPointLights(const glm::mat4& worldToCamera)
 	{
+		worldToCameraMat = worldToCamera;
 		// start i at 1 since we're assuming lights[0] is directional light
 		for (int i{ 1 }; i < NUMBER_OF_LIGHTS; ++i)
 		{
@@ -126,7 +128,7 @@ namespace Scenes {
 		lightBlock.ambientIntensity = ambientIntensity;
 		lightBlock.lightAttenuation = 4.0f * Constants::PI;
 		lightBlock.gamma = 1.0f / 2.2f;
-		lightBlock.lights[0] = { sunDir, glm::vec4{1.0f} };
+		lightBlock.lights[0] = { sunDirWorld, glm::vec4{1.0f} };
 		lightBlock.lights[1] = { pointPos[0], pointIntensity[0] };
 
 		// daylight cycle

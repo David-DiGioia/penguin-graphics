@@ -39,6 +39,7 @@ GLint u_ambientLightIntensity;
 GLint u_modelToCamera;
 GLint u_cameraToClip;
 GLint u_normalModelToCameraMatrix;
+GLint u_cameraSpherePos;
 
 GLuint cameraToClipBuffer;
 
@@ -99,22 +100,11 @@ void initBillboard()
 	programBillboard->bind();
 
 	GLint u_sphereRadius{ programBillboard->getUniform("u_sphereRadius") };
-	GLint u_cameraSpherePos{ programBillboard->getUniform("u_cameraSpherePos") };
+	u_cameraSpherePos = programBillboard->getUniform("u_cameraSpherePos");
 	programBillboard->setUniform1f(u_sphereRadius, 1.0f);
-	programBillboard->setUniform3fv(u_cameraSpherePos, glm::vec3{ 0.0f, 0.0f, -3.0f });
 
 	vaoPtr = std::make_unique<VertexArray>();
 	vaoPtr->bind();
-}
-
-void renderBillboard()
-{
-	programBillboard->bind();
-	vaoPtr->bind();
-
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-	programTriangle->unbind();
 }
 
 void init()
@@ -179,6 +169,17 @@ glm::mat4 createModelMatrix(const MeshData::Transform& transform)
 	return translate * rotate * scale;
 }
 
+void renderBillboard(glm::mat4 worldToCamera)
+{
+	programBillboard->bind();
+	vaoPtr->bind();
+
+	programBillboard->setUniform3fv(u_cameraSpherePos, worldToCamera * glm::vec4{ 0.0f, 2.0f, -2.0f, 1.0f });
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	programTriangle->unbind();
+}
 
 void render()
 {
@@ -193,12 +194,12 @@ void render()
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &cameraToClip);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-	renderBillboard();
-
-	program->bind();
-
 	scene.transformPointLights(worldToCamera);
 	scene.updateLightBuffer();
+
+	renderBillboard(worldToCamera);
+
+	program->bind();
 
 	for (int i{ 0 }; i < scene.models.size(); ++i)
 	{
@@ -268,9 +269,9 @@ int main(void)
 	glEnable(GL_FRAMEBUFFER_SRGB);
 
 	// Culling
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_BACK);
-	//glFrontFace(GL_CCW);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CCW);
 
 	// Depth testing
 	glEnable(GL_DEPTH_TEST);
