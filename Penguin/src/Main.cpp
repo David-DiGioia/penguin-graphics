@@ -174,7 +174,7 @@ void renderBillboard(glm::mat4 worldToCamera)
 	programBillboard->bind();
 	vaoPtr->bind();
 
-	programBillboard->setUniform3fv(u_cameraSpherePos, worldToCamera * glm::vec4{ -1.0f, 2.0f, -2.0f, 1.0f });
+	programBillboard->setUniform3fv(u_cameraSpherePos, worldToCamera * glm::vec4{ -1.0f, 2.0f + std::sin(glfwGetTime()), -2.0f, 1.0f });
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 

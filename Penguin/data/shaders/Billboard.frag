@@ -7,6 +7,11 @@ layout(location = 0) out vec4 outputColor;
 uniform float u_sphereRadius;
 uniform vec3 u_cameraSpherePos;
 
+layout(std140, binding = 2) uniform Projection
+{
+	mat4 cameraToClipMatrix;
+};
+
 layout(std140, binding = 0) uniform Material
 {
 	vec4 specularColor;
@@ -106,6 +111,12 @@ void main()
 	
 	impostor(cameraPos, cameraNormal);
 	
+	// Set the depth based on the new cameraPos
+	vec4 clipPos = cameraToClipMatrix * vec4(cameraPos, 1.0f);
+	float ndcDepth = clipPos.z / clipPos.w;
+	gl_FragDepth = ((gl_DepthRange.diff * ndcDepth) +
+		gl_DepthRange.near + gl_DepthRange.far) / 2.0f;
+
 	vec4 accumLighting = diffuse * Lgt.ambientIntensity;
 	for (int light = 0; light < numberOfLights; ++light)
 	{
