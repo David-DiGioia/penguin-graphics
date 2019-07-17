@@ -483,6 +483,7 @@
     <None Include="data\shaders\Billboard.frag" />
     <None Include="data\shaders\TEST.vert" />
     <None Include="data\shaders\TEST.frag" />
+    <None Include="data\shaders\Billboard.geom" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core.h">

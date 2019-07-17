@@ -1,11 +1,13 @@
 #version 460 core
 
-in vec2 v_mapping;
+in FragData
+{
+	flat vec3 cameraSpherePos;
+	flat float sphereRadius;
+	smooth vec2 mapping;
+};
 
 layout(location = 0) out vec4 outputColor;
-
-uniform float u_sphereRadius;
-uniform vec3 u_cameraSpherePos;
 
 layout(std140, binding = 2) uniform Projection
 {
@@ -86,11 +88,11 @@ vec4 computeLighting(in PerLight light, in vec4 diffuse, in vec3 cameraPos, in v
 
 void impostor(out vec3 cameraPos, out vec3 cameraNormal)
 {
-	vec3 cameraPlanePos = vec3(v_mapping * u_sphereRadius, 0.0) + u_cameraSpherePos;
+	vec3 cameraPlanePos = vec3(mapping * sphereRadius, 0.0) + cameraSpherePos;
 	vec3 dir = normalize(cameraPlanePos);
 
-	float B = 2.0f * dot(dir, -u_cameraSpherePos);
-	float C = dot(u_cameraSpherePos, u_cameraSpherePos) - (u_sphereRadius * u_sphereRadius);
+	float B = 2.0f * dot(dir, -cameraSpherePos);
+	float C = dot(cameraSpherePos, cameraSpherePos) - (sphereRadius * sphereRadius);
 
 	float determinant = (B * B) - (4.0f * C);
 	if (determinant < 0.0f)
@@ -99,7 +101,7 @@ void impostor(out vec3 cameraPos, out vec3 cameraNormal)
 	float t = (-B - sqrt(determinant)) / 2.0f;
 
 	cameraPos = dir * t;
-	cameraNormal = normalize(cameraPos - u_cameraSpherePos);
+	cameraNormal = normalize(cameraPos - cameraSpherePos);
 }
 
 void main()

@@ -40,6 +40,7 @@ GLint u_modelToCamera;
 GLint u_cameraToClip;
 GLint u_normalModelToCameraMatrix;
 GLint u_cameraSpherePos;
+GLint u_worldToCamera;
 
 GLuint cameraToClipBuffer;
 
@@ -51,10 +52,16 @@ Scenes::Arctic scene;
 // These coordinates are in clip space....
 // The z range is [-1, 1], so they're invisible outside
 // this range.
-float vertexPositions[] = {
+float vertexPositions[]{
 	0.5f, 0.5f, 0.0f,
 	-0.5f, -0.5f, 0.0f,
 	0.5f, -0.5f, 0.0f,
+};
+
+float billboardData[]{
+	-1.0f, 2.0f, -2.0f, 1.0f,
+	-3.0f, 2.0f, -2.0f, 0.5f,
+	-2.0f, 1.0f,  0.0f, 0.3f,
 };
 
 std::unique_ptr<VertexBuffer> vboPtr;
@@ -75,7 +82,7 @@ void initTemp()
 	vaoPtr->bind();
 
 	VertexBufferLayout layout;
-	layout.Push<float>(3);
+	layout.push<float>(3);
 	vaoPtr->addBuffer(*vboPtr, layout);
 }
 
@@ -89,22 +96,30 @@ void renderTemp()
 	programTriangle->unbind();
 }
 
+constexpr int NUMBER_OF_SPHERES{ 3 };
+
 void initBillboard()
 {
 	std::vector<GLuint> shadersBillboard{
 		Util::compileShader(GL_VERTEX_SHADER, "data/shaders/Billboard.vert"),
+		Util::compileShader(GL_GEOMETRY_SHADER, "data/shaders/Billboard.geom"),
 		Util::compileShader(GL_FRAGMENT_SHADER, "data/shaders/Billboard.frag")
 	};
 
 	programBillboard = std::make_unique<Program>(shadersBillboard);
 	programBillboard->bind();
 
-	GLint u_sphereRadius{ programBillboard->getUniform("u_sphereRadius") };
-	u_cameraSpherePos = programBillboard->getUniform("u_cameraSpherePos");
-	programBillboard->setUniform1f(u_sphereRadius, 1.0f);
+	u_worldToCamera = programBillboard->getUniform("u_worldToCamera");
+
+	VertexBufferLayout layout{};
+	layout.push<float>(3);  // spherePos
+	layout.push<float>(1);  // sphereRadius
+
+	vboPtr = std::make_unique<VertexBuffer>(billboardData, sizeof(billboardData));
 
 	vaoPtr = std::make_unique<VertexArray>();
 	vaoPtr->bind();
+	vaoPtr->addBuffer(*vboPtr, layout);
 }
 
 void init()
@@ -112,9 +127,9 @@ void init()
 	initBillboard();
 
 	VertexBufferLayout layout;
-	layout.Push<float>(3); // position
-	layout.Push<float>(2); // textureCoords
-	layout.Push<float>(3); // normals
+	layout.push<float>(3); // position
+	layout.push<float>(2); // textureCoords
+	layout.push<float>(3); // normals
 
 	// Beware! If vector has to reallocate for vaos or vbos, destructors will be called, deleting gl buffers
 	for (int i{ 0 }; i < scene.models.size(); ++i)
@@ -174,9 +189,9 @@ void renderBillboard(glm::mat4 worldToCamera)
 	programBillboard->bind();
 	vaoPtr->bind();
 
-	programBillboard->setUniform3fv(u_cameraSpherePos, worldToCamera * glm::vec4{ -1.0f, 2.0f + std::sin(glfwGetTime()), -2.0f, 1.0f });
+	programBillboard->setUniformMat4f(u_worldToCamera, worldToCamera);
 
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDrawArrays(GL_POINTS, 0, NUMBER_OF_SPHERES);
 
 	programTriangle->unbind();
 }

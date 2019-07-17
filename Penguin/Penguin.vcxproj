@@ -162,6 +162,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="data\shaders\Billboard.frag" />
+    <None Include="data\shaders\Billboard.geom" />
     <None Include="data\shaders\Billboard.vert" />
     <None Include="data\shaders\HDR.frag" />
     <None Include="data\shaders\PointLight.frag" />
