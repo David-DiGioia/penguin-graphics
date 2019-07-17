@@ -90,6 +90,9 @@ StyleCopReport.xml
 *.svclog
 *.scc
 
+# Don't ignore obj files that are 3d models
+!Penguin/data/mesh/*.obj
+
 # Chutzpah Test files
 _Chutzpah*
 
