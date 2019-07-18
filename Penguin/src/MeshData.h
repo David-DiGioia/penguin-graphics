@@ -36,7 +36,8 @@ namespace MeshData {
 		glm::vec4 diffuseColor{ 1.0f, 1.0f, 1.0f, 1.0f };
 		glm::vec4 specularColor{ 0.3f, 0.3f, 0.3f, 1.0f };
 		float specularShininess{ 0.5f };
-		float padding[3];
+		int materialIndex{ 0 };
+		float padding[2];
 	};
 
 	class Material

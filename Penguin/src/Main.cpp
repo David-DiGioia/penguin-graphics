@@ -59,10 +59,17 @@ float vertexPositions[]{
 	0.5f, -0.5f, 0.0f,
 };
 
-float billboardData[]{
-	-1.0f, 2.0f, -2.0f, 1.0f,
-	-3.0f, 2.0f, -2.0f, 0.5f,
-	-2.0f, 1.0f,  0.0f, 0.3f,
+struct BillboardVertex
+{
+	glm::vec3 worldSpherePos;
+	float sphereRadius;
+	unsigned int materialIndex;
+};
+
+BillboardVertex billboardData[]{
+	BillboardVertex{glm::vec3{-1.0f, 2.0f, -2.0f}, 1.0f, 0u},
+	BillboardVertex{glm::vec3{-3.0f, 2.0f, -2.0f}, 0.5f, 1u},
+	BillboardVertex{glm::vec3{-2.0f, 1.0f,  0.0f}, 0.3, 2u},
 };
 
 constexpr int NUMBER_OF_SPHERES{ 3 };
@@ -127,6 +134,7 @@ void initBillboard()
 	VertexBufferLayout layout{};
 	layout.push<float>(3);  // spherePos
 	layout.push<float>(1);  // sphereRadius
+	layout.push<unsigned int>(1);  // materialIndex
 
 	vboPtr = std::make_unique<VertexBuffer>(billboardData, sizeof(billboardData));
 
