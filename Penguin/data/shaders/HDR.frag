@@ -10,6 +10,7 @@ uniform sampler2D u_texture;
 
 layout(std140, binding = 0) uniform Material
 {
+	vec4 diffuseColor;
 	vec4 specularColor;
 	float specularShininess;
 } Mtl;

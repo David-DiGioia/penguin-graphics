@@ -15,3 +15,6 @@ Point light, camera space, uniform block updated with glBufferSubData:
 
 Daynight cycle:
 [0.19] avg ms
+
+3 sphere using geometry shader and materials:
+[.20, .22] avg ms

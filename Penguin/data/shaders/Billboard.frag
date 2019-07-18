@@ -14,10 +14,18 @@ layout(std140, binding = 2) uniform Projection
 	mat4 cameraToClipMatrix;
 };
 
-layout(std140, binding = 0) uniform Material
+struct MaterialEntry
 {
+	vec4 diffuseColor;
 	vec4 specularColor;
 	float specularShininess;
+};
+
+const int NUMBER_OF_SPHERES = 3;
+
+layout(std140, binding = 0) uniform Material
+{
+	MaterialEntry material[NUMBER_OF_SPHERES];
 } Mtl;
 
 struct PerLight
@@ -51,7 +59,8 @@ float calcAttenuation(in vec3 cameraSpacePos,
 	return (1 / (1.0f + Lgt.lightAttenuation * lightDistanceSqr));
 }
 
-vec4 computeLighting(in PerLight light, in vec4 diffuse, in vec3 cameraPos, in vec3 cameraNormal)
+vec4 computeLighting(in PerLight light, in vec3 cameraPos,
+	in vec3 cameraNormal, in MaterialEntry material)
 {
 	vec3 lightDir;
 	vec4 lightIntensity;
@@ -74,14 +83,14 @@ vec4 computeLighting(in PerLight light, in vec4 diffuse, in vec3 cameraPos, in v
 
 	vec3 halfAngle = normalize(lightDir + viewDirection);
 	float angleNormalHalf = acos(dot(halfAngle, surfaceNormal));
-	float exponent = angleNormalHalf / Mtl.specularShininess;
+	float exponent = angleNormalHalf / material.specularShininess;
 	exponent = -(exponent * exponent);
 	float gaussianTerm = exp(exponent);
 
 	gaussianTerm = cosAngIncidence != 0.0 ? gaussianTerm : 0.0f;
 
-	vec4 lighting = diffuse * lightIntensity * cosAngIncidence;
-	lighting += Mtl.specularColor * lightIntensity * gaussianTerm;
+	vec4 lighting = material.diffuseColor * lightIntensity * cosAngIncidence;
+	lighting += material.specularColor * lightIntensity * gaussianTerm;
 
 	return lighting;
 }
@@ -109,8 +118,6 @@ void main()
 	vec3 cameraPos;
 	vec3 cameraNormal;
 	
-	vec4 diffuse = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	
 	impostor(cameraPos, cameraNormal);
 	
 	// Set the depth based on the new cameraPos
@@ -119,11 +126,11 @@ void main()
 	gl_FragDepth = ((gl_DepthRange.diff * ndcDepth) +
 		gl_DepthRange.near + gl_DepthRange.far) / 2.0f;
 
-	vec4 accumLighting = diffuse * Lgt.ambientIntensity;
+	vec4 accumLighting = Mtl.material[gl_PrimitiveID].diffuseColor * Lgt.ambientIntensity;
 	for (int light = 0; light < numberOfLights; ++light)
 	{
 		accumLighting += computeLighting(Lgt.lights[light],
-			diffuse, cameraPos, cameraNormal);
+			cameraPos, cameraNormal, Mtl.material[gl_PrimitiveID]);
 	}
 	
 	accumLighting /= Lgt.maxIntensity;

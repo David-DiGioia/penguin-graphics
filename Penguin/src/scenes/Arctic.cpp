@@ -63,8 +63,8 @@ namespace Scenes {
 #ifdef DEBUG
 		float guiDelta{ 0.0f };
 		float guiCameraRotation{ 0.0f };
-		float guiSpecular{ 0.2f };
-		glm::vec3 guiSpecColor{ 0.35f, 0.35f, 0.44f };
+		float guiSpecular{ 0.15f };
+		glm::vec3 guiSpecColor{ 0.38f, 0.38f, 0.7f };
 		constexpr size_t NANO_VEC_LEN{ 100 };
 		std::vector<long long> nanoVec;
 		unsigned long long nanoVecIndex{ 0 };

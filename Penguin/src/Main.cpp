@@ -43,6 +43,7 @@ GLint u_cameraSpherePos;
 GLint u_worldToCamera;
 
 GLuint cameraToClipBuffer;
+GLuint materialArrBuffer;
 
 // NOTICE: CHANGING TYPE OF "scene" DETERMINES WHICH SCENE IS ACTIVE
 // -----------------------------------------------------------------
@@ -62,6 +63,14 @@ float billboardData[]{
 	-1.0f, 2.0f, -2.0f, 1.0f,
 	-3.0f, 2.0f, -2.0f, 0.5f,
 	-2.0f, 1.0f,  0.0f, 0.3f,
+};
+
+constexpr int NUMBER_OF_SPHERES{ 3 };
+
+MeshData::MaterialBlock matBlocks[NUMBER_OF_SPHERES]{
+	MeshData::MaterialBlock{glm::vec4{0.7568f, 0.8941f, 0.6039f, 1.0f}, glm::vec4{0.3f, 0.3f, 0.2f, 1.0f}, 0.1f },
+	MeshData::MaterialBlock{glm::vec4{0.9607f, 0.9882f, 0.6627f, 1.0f}, glm::vec4{0.4f, 0.3f, 0.4f, 1.0f}, 0.5f },
+	MeshData::MaterialBlock{glm::vec4{0.4235f, 0.7058f, 0.7333f, 1.0f}, glm::vec4{0.1f, 0.2f, 0.2f, 1.0f}, 0.3f },
 };
 
 std::unique_ptr<VertexBuffer> vboPtr;
@@ -96,7 +105,6 @@ void renderTemp()
 	programTriangle->unbind();
 }
 
-constexpr int NUMBER_OF_SPHERES{ 3 };
 
 void initBillboard()
 {
@@ -108,6 +116,11 @@ void initBillboard()
 
 	programBillboard = std::make_unique<Program>(shadersBillboard);
 	programBillboard->bind();
+
+	glGenBuffers(1, &materialArrBuffer);
+	glBindBuffer(GL_UNIFORM_BUFFER, materialArrBuffer);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(matBlocks), matBlocks, GL_STATIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	u_worldToCamera = programBillboard->getUniform("u_worldToCamera");
 
@@ -191,6 +204,10 @@ void renderBillboard(glm::mat4 worldToCamera)
 
 	programBillboard->setUniformMat4f(u_worldToCamera, worldToCamera);
 
+	// Gotta bind the material array right before draw call bc it conflicts with material
+	// objects that bind to the same binding point... It's not good, I didn't know before I would
+	// use a material array, so at the moment material objects aren't a great model
+	glBindBufferBase(GL_UNIFORM_BUFFER, UboBindings::MATERIAL, materialArrBuffer);
 	glDrawArrays(GL_POINTS, 0, NUMBER_OF_SPHERES);
 
 	programTriangle->unbind();

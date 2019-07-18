@@ -31,6 +31,14 @@ namespace MeshData {
 		glm::vec3 scale{ 1.0f, 1.0f, 1.0f };
 	};
 
+	struct MaterialBlock
+	{
+		glm::vec4 diffuseColor{ 1.0f, 1.0f, 1.0f, 1.0f };
+		glm::vec4 specularColor{ 0.3f, 0.3f, 0.3f, 1.0f };
+		float specularShininess{ 0.5f };
+		float padding[3];
+	};
+
 	class Material
 	{
 	public:
@@ -42,11 +50,7 @@ namespace MeshData {
 
 		// Maps to glsl uniform block
 		// No texture because sampler2D is an opaque type and can't be in uniform block
-		struct Block
-		{
-			glm::vec4 specularColor{ 0.3f, 0.3f, 0.3f, 1.0f };
-			float specularShininess{ 0.5f };
-		} block;
+		MaterialBlock block;
 
 	private:
 		Texture m_diffuse;
