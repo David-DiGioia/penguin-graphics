@@ -37,13 +37,14 @@ namespace MeshData {
 		glm::vec4 specularColor{ 0.3f, 0.3f, 0.3f, 1.0f };
 		float specularShininess{ 0.5f };
 		int materialIndex{ 0 };
-		float padding[2];
+		int useSpecMap{ false }; // use int instead of bool because bools are 32 bit in glsl
+		float padding[1];
 	};
 
 	class Material
 	{
 	public:
-		Material(const char* texPath);
+		Material(const char* diffusePath, const char* specularPath = DEFAULT_TEX);
 		~Material();
 		void bind();
 		void unbind();
@@ -55,6 +56,7 @@ namespace MeshData {
 
 	private:
 		Texture m_diffuse;
+		Texture m_specular;
 		unsigned int m_uniformBuffer;
 	};
 
@@ -64,7 +66,7 @@ namespace MeshData {
 		Material material;
 		Transform transform;
 
-		Model(const char* objPath, const char* texturePath = DEFAULT_TEX);
+		Model(const char* objPath, const char* texturePath = DEFAULT_TEX, const char* specularPath = DEFAULT_TEX);
 	};
 
 	struct FrustumData
@@ -90,7 +92,8 @@ namespace MeshData {
 class Object
 {
 public:
-	Object(std::vector<MeshData::Model>* modelVec, const char* objPath, const char* texturePath = MeshData::DEFAULT_TEX);
+	Object(std::vector<MeshData::Model>* modelVec, const char* objPath,
+		const char* texturePath = MeshData::DEFAULT_TEX, const char* specularPath = MeshData::DEFAULT_TEX);
 	MeshData::Model& get();
 
 private:

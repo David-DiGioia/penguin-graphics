@@ -306,7 +306,6 @@
     <None Include="src\vendor\glm\gtx\wrap.inl" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\UboBindings.h" />
     <ClInclude Include="src\Constants.h" />
     <ClInclude Include="src\Core.h" />
     <ClInclude Include="src\IndexBuffer.h" />

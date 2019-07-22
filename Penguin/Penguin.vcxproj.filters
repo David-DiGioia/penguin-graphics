@@ -1278,8 +1278,5 @@
     <ClInclude Include="src\scenes\Arctic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\UboBindings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

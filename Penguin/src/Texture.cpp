@@ -23,7 +23,6 @@ Texture::Texture(const char* path)
 	glSamplerParameteri(m_samplerID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glSamplerParameteri(m_samplerID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glSamplerParameteri(m_samplerID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glBindSampler(0, m_samplerID);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_buffer);
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -41,6 +40,7 @@ void Texture::bind(unsigned int slot) const
 {
 	glActiveTexture(GL_TEXTURE0 + slot);
 	glBindTexture(GL_TEXTURE_2D, m_textureID);
+	glBindSampler(slot, m_samplerID);
 }
 
 void Texture::unbind() const

@@ -23,7 +23,6 @@
 #include "Program.h"
 #include "MeshData.h"
 #include "scenes/Scenes.h"
-#include "UboBindings.h"
 
 std::unique_ptr<Program> program;
 std::unique_ptr<Program> programTriangle;
@@ -67,17 +66,17 @@ struct BillboardVertex
 };
 
 BillboardVertex billboardData[]{
-	BillboardVertex{glm::vec3{-1.0f, 2.0f, -2.0f}, 1.0f, 0u},
-	BillboardVertex{glm::vec3{-3.0f, 2.0f, -2.0f}, 0.5f, 1u},
+	BillboardVertex{glm::vec3{-1.0f, 2.0f, -2.0f}, 1.0f, 1u},
+	BillboardVertex{glm::vec3{-3.0f, 2.0f, -2.0f}, 0.5f, 0u},
 	BillboardVertex{glm::vec3{-2.0f, 1.0f,  0.0f}, 0.3, 2u},
 };
 
 constexpr int NUMBER_OF_SPHERES{ 3 };
 
 MeshData::MaterialBlock matBlocks[NUMBER_OF_SPHERES]{
-	MeshData::MaterialBlock{glm::vec4{0.7568f, 0.8941f, 0.6039f, 1.0f}, glm::vec4{0.3f, 0.3f, 0.2f, 1.0f}, 0.1f },
-	MeshData::MaterialBlock{glm::vec4{0.9607f, 0.9882f, 0.6627f, 1.0f}, glm::vec4{0.4f, 0.3f, 0.4f, 1.0f}, 0.5f },
-	MeshData::MaterialBlock{glm::vec4{0.4235f, 0.7058f, 0.7333f, 1.0f}, glm::vec4{0.1f, 0.2f, 0.2f, 1.0f}, 0.3f },
+	MeshData::MaterialBlock{glm::vec4{0.7568f, 0.8941f, 0.6039f, 1.0f}, glm::vec4{0.3f, 0.3f, 0.2f, 1.0f}, 0.1f, false },
+	MeshData::MaterialBlock{glm::vec4{0.9607f, 0.9882f, 0.6627f, 1.0f}, glm::vec4{0.4f, 0.3f, 0.4f, 1.0f}, 0.5f, false },
+	MeshData::MaterialBlock{glm::vec4{0.4235f, 0.7058f, 0.7333f, 1.0f}, glm::vec4{0.1f, 0.2f, 0.2f, 1.0f}, 0.3f, false },
 };
 
 std::unique_ptr<VertexBuffer> vboPtr;
@@ -174,7 +173,9 @@ void init()
 	program->bind();
 
 	GLint u_texture{ program->getUniform("u_texture") };
-	program->setUniform1i(u_texture, 0);
+	program->setUniform1i(u_texture, TextureBindings::DIFFUSE);
+	GLint u_specMap{ program->getUniform("u_specMap") };
+	program->setUniform1i(u_specMap, TextureBindings::SPECULAR);
 
 	scene.initLights(program->getID());
 

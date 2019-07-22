@@ -7,12 +7,15 @@ in vec3 v_cameraSpacePos;
 layout(location = 0) out vec4 outputColor;
 
 uniform sampler2D u_texture;
+uniform sampler2D u_specMap;
 
 layout(std140, binding = 0) uniform Material
 {
 	vec4 diffuseColor;
 	vec4 specularColor;
 	float specularShininess;
+	int materialIndex;
+	int useSpecMap;
 } Mtl;
 
 struct PerLight
@@ -46,7 +49,7 @@ float calcAttenuation(in vec3 cameraSpacePos,
 	return (1 / (1.0f + Lgt.lightAttenuation * lightDistanceSqr));
 }
 
-vec4 computeLighting(in PerLight light, in vec4 texColor)
+vec4 computeLighting(in PerLight light, in vec4 texColor, in float shininess)
 {
 	vec3 lightDir;
 	vec4 lightIntensity;
@@ -69,7 +72,7 @@ vec4 computeLighting(in PerLight light, in vec4 texColor)
 
 	vec3 halfAngle = normalize(lightDir + viewDirection);
 	float angleNormalHalf = acos(dot(halfAngle, surfaceNormal));
-	float exponent = angleNormalHalf / Mtl.specularShininess;
+	float exponent = angleNormalHalf / shininess;
 	exponent = -(exponent * exponent);
 	float gaussianTerm = exp(exponent);
 
@@ -84,15 +87,17 @@ vec4 computeLighting(in PerLight light, in vec4 texColor)
 void main()
 {
 	vec4 texColor = texture(u_texture, v_texCoord);
+	float shininess = (Mtl.useSpecMap == 1) ? texture(u_specMap, v_texCoord).r : Mtl.specularShininess;
 
 	vec4 accumLighting = texColor * Lgt.ambientIntensity;
 	for (int light = 0; light < numberOfLights; ++light)
 	{
-		accumLighting += computeLighting(Lgt.lights[light], texColor);
+		accumLighting += computeLighting(Lgt.lights[light], texColor, shininess);
 	}
 
 	accumLighting /= Lgt.maxIntensity;
 	//outputColor = pow(accumLighting, vec4(Lgt.gamma, Lgt.gamma, Lgt.gamma, 1.0f));
 	outputColor = accumLighting;
+
 	outputColor.a = 1.0f;
 }

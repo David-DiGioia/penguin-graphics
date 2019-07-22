@@ -10,7 +10,6 @@
 #include "imgui/imgui_impl_opengl3.h"
 
 #include "../Constants.h"
-#include "../UboBindings.h"
 #include "../Util.h"
 
 namespace Scenes {
@@ -175,7 +174,7 @@ namespace Scenes {
 
 		penguin = std::make_unique<Object>(&models, "data/mesh/penguin.obj", "data/textures/penguin_col.png");
 		arctic = std::make_unique<Object>(&models, "data/mesh/arctic.obj", "data/textures/arctic_col.png");
-		igloo = std::make_unique<Object>(&models, "data/mesh/igloo.obj", "data/textures/igloo_col.png");
+		igloo = std::make_unique<Object>(&models, "data/mesh/igloo.obj", "data/textures/igloo_col.png", "data/textures/igloo_spec.png");
 		pole = std::make_unique<Object>(&models, "data/mesh/pole.obj", "data/textures/pole_col.png");
 		bulldozer = std::make_unique<Object>(&models, "data/mesh/bulldozer.obj", "data/textures/bulldozer_col.png");
 

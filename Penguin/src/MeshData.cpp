@@ -1,13 +1,14 @@
 #include "MeshData.h"
 
 #include "Util.h"
-#include "UboBindings.h"
+#include "Constants.h"
 
 namespace MeshData {
 
-	Material::Material(const char* texPath)
-		: m_diffuse{ texPath }, m_uniformBuffer{ 0 }
+	Material::Material(const char* diffusePath, const char* specularPath)
+		: m_diffuse{ diffusePath }, m_specular{ specularPath }, m_uniformBuffer{ 0 }
 	{
+		block.useSpecMap = (specularPath != DEFAULT_TEX);
 		glGenBuffers(1, &m_uniformBuffer);
 		glBindBuffer(GL_UNIFORM_BUFFER, m_uniformBuffer);
 		glBufferData(GL_UNIFORM_BUFFER, sizeof(block), &block, GL_STATIC_DRAW);
@@ -21,7 +22,8 @@ namespace MeshData {
 
 	void Material::bind()
 	{
-		m_diffuse.bind(0);
+		m_diffuse.bind(TextureBindings::DIFFUSE);
+		m_specular.bind(TextureBindings::SPECULAR);
 		glBindBufferBase(GL_UNIFORM_BUFFER, UboBindings::MATERIAL, m_uniformBuffer);
 	}
 
@@ -40,20 +42,21 @@ namespace MeshData {
 	}
 
 
-	Model::Model(const char* objPath, const char* texturePath)
+	Model::Model(const char* objPath, const char* texturePath, const char* specularPath)
 		: mesh{ Util::loadOBJ(objPath) }
-		, material{ texturePath }
+		, material{ texturePath, specularPath }
 	{
 	}
 
 }
 
 // I used a pointer for modelVec so it's more obvious it's being modified
-Object::Object(std::vector<MeshData::Model>* modelVec, const char* objPath, const char* texturePath)
+Object::Object(std::vector<MeshData::Model>* modelVec, const char* objPath,
+	const char* texturePath, const char* specularPath)
 	: m_index{ modelVec->size() }
 	, m_modelVec{ *modelVec }
 {
-	modelVec->emplace_back(objPath, texturePath);
+	modelVec->emplace_back(objPath, texturePath, specularPath);
 }
 
 MeshData::Model& Object::get()
