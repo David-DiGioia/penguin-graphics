@@ -66,7 +66,7 @@ struct BillboardVertex
 };
 
 BillboardVertex billboardData[]{
-	BillboardVertex{glm::vec3{-1.0f, 2.0f, -2.0f}, 1.0f, 1u},
+	BillboardVertex{glm::vec3{-1.0f, 0.5f, -2.0f}, 1.0f, 1u},
 	BillboardVertex{glm::vec3{-3.0f, 2.0f, -2.0f}, 0.5f, 0u},
 	BillboardVertex{glm::vec3{-2.0f, 1.0f,  0.0f}, 0.3, 2u},
 };

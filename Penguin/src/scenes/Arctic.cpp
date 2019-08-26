@@ -51,7 +51,8 @@ namespace Scenes {
 
 		constexpr static int NUMBER_OF_LIGHTS{ 2 };
 		// subtract 1 since zeroth index is directional light
-		glm::vec4 pointPos[NUMBER_OF_LIGHTS - 1]{ { 0.0f, 1.5f, 0.0f, 1.0f } };
+		// 0.0f, 1.5f, 0.0f
+		glm::vec4 pointPos[NUMBER_OF_LIGHTS - 1]{ { 4.0f, 1.0f, -1.0f, 1.0f } };
 		glm::vec4 pointIntensity[NUMBER_OF_LIGHTS - 1]{ {7.0f, 7.0f, 6.0f, 1.0f } };
 
 		// constants
