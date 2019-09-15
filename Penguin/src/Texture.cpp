@@ -3,6 +3,8 @@
 #include "GL/glew.h"
 #include "stb_image/stb_image.h"
 
+#include <iostream>
+
 Texture::Texture(const char* path)
 	: m_textureID{ 0 }, m_width{ 0 }, m_height{ 0 }, m_bitsPerPixel{ 0 }, m_buffer{ nullptr }
 {
@@ -31,18 +33,20 @@ Texture::Texture(const char* path)
 
 	glGenSamplers(1, &m_samplerID);
 	glSamplerParameteri(m_samplerID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glSamplerParameteri(m_samplerID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+	glSamplerParameteri(m_samplerID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glSamplerParameteri(m_samplerID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 
-	// Place this directly after defining mipmap level 0, then don't manually define any more
-	//glGenerateMipmap(GL_TEXTURE_2D);
+	// The maximum anisotropy level can be queried with: glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso);
+	glSamplerParameterf(m_samplerID, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4.0f);
+
 
 	// If the successive mipmap levels aren't exactly the previous level divided by 2, it will render black
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_buffer);
-	glTexImage2D(GL_TEXTURE_2D, 1, GL_SRGB8_ALPHA8, m_width / 2, m_height / 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, red_buffer);
-	glTexImage2D(GL_TEXTURE_2D, 2, GL_SRGB8_ALPHA8, m_width / 4, m_height / 4, 0, GL_RGBA, GL_UNSIGNED_BYTE, green_buffer);
-	glTexImage2D(GL_TEXTURE_2D, 3, GL_SRGB8_ALPHA8, m_width / 8, m_height / 8, 0, GL_RGBA, GL_UNSIGNED_BYTE, blue_buffer);
-	glTexImage2D(GL_TEXTURE_2D, 4, GL_SRGB8_ALPHA8, m_width / 16, m_height / 16, 0, GL_RGBA, GL_UNSIGNED_BYTE, yellow_buffer);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	//glTexImage2D(GL_TEXTURE_2D, 1, GL_SRGB8_ALPHA8, m_width / 2, m_height / 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, red_buffer);
+	//glTexImage2D(GL_TEXTURE_2D, 2, GL_SRGB8_ALPHA8, m_width / 4, m_height / 4, 0, GL_RGBA, GL_UNSIGNED_BYTE, green_buffer);
+	//glTexImage2D(GL_TEXTURE_2D, 3, GL_SRGB8_ALPHA8, m_width / 8, m_height / 8, 0, GL_RGBA, GL_UNSIGNED_BYTE, blue_buffer);
+	//glTexImage2D(GL_TEXTURE_2D, 4, GL_SRGB8_ALPHA8, m_width / 16, m_height / 16, 0, GL_RGBA, GL_UNSIGNED_BYTE, yellow_buffer);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	if (m_buffer)

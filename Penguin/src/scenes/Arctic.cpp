@@ -47,7 +47,8 @@ namespace Scenes {
 		Util::Gradient<glm::vec4> sunGradient{ glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f } };
 		Util::Gradient<glm::vec4> ambientGradient{ nightAmbient };
 		Util::Gradient<float> maxGradient{ nightMaxIntensity };
-		float timeOfDay{ 0.0f };
+		float timeOfDay{ 8.0f / 24.0f };
+		bool updateTime{ false };
 
 		constexpr static int NUMBER_OF_LIGHTS{ 2 };
 		// subtract 1 since zeroth index is directional light
@@ -243,7 +244,8 @@ namespace Scenes {
 
 		updateCamera();
 
-		timeOfDay = (timeOfDay + delta / dayCycleTime <= 1.0f) ? timeOfDay + delta / dayCycleTime : 0.0f;
+		if (updateTime)
+			timeOfDay = (timeOfDay + delta / dayCycleTime <= 1.0f) ? timeOfDay + delta / dayCycleTime : 0.0f;
 		updateLighting(timeOfDay);
 
 #ifdef DEBUG
